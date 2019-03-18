@@ -1,0 +1,68 @@
+#!/bin/bash
+
+cd "$DOKARR_PATH"
+
+# detect if the docker-machine exists
+DOCKER_MACHINE_LS=$(docker-machine ls | awk '$1 == "'$DOKARR_MACHINE_NAME'" { print $1 }')
+
+# create docker-machine if it does not already exist
+if [[ "$DOCKER_MACHINE_LS" != "$DOKARR_MACHINE_NAME"  ]]; then
+    echo "creating $DOKARR_MACHINE_NAME ..." >&2
+    docker-machine create \
+        --virtualbox-cpu-count "$DOKARR_CPUS" \
+        --virtualbox-memory "$DOKARR_MEM" \
+        --virtualbox-disk-size "${DOKARR_DISK_GB}000" \
+        "$DOKARR_MACHINE_NAME"
+else
+    echo "$DOKARR_MACHINE_NAME exists" >&2
+fi
+
+# the name of the share and location to share in VM
+SHARED_FOLDER_NAME=dokarr
+SHARED_FOLDER_DRIVE=$(echo "${DOKARR_PATH:1:1}" | tr "[:lower:]" "[:upper:]")
+SHARED_FOLDER_PATH_WIN=$(echo "$SHARED_FOLDER_DRIVE:\\${DOKARR_PATH:3}" | sed 's#/#\\#')
+
+# stop the vm before modifying shared folders
+docker-machine stop "$DOKARR_MACHINE_NAME"
+
+# remove default shared folders
+VBoxManage sharedfolder remove "$DOKARR_MACHINE_NAME" --name "Users" 2>/dev/null
+VBoxManage sharedfolder remove "$DOKARR_MACHINE_NAME" --name "c/Users" 2>/dev/null
+VBoxManage sharedfolder remove "$DOKARR_MACHINE_NAME" --name "home" 2>/dev/null
+
+# uncomment if using vboxsf but that will cause ERROR_COUNT when file locking is requested
+## add SHARED_FOLDER_PATH_WIN to the VM
+#VBoxManage sharedfolder add "$DOKARR_MACHINE_NAME" --name "${DOKARR_PATH:1}" --hostpath "\\\\?\\$SHARED_FOLDER_PATH_WIN\\" --automount
+#
+## allow following symlinks in the VM
+#VBoxManage setextradata "$DOKARR_MACHINE_NAME" "VBoxInternal2/SharedFoldersEnableSymlinksCreate/${DOKARR_PATH:1}" 1
+
+# configure port forwarding
+VBoxManage modifyvm "$DOKARR_MACHINE_NAME" --natpf1 "${DOKARR_MACHINE_NAME}-ssh,tcp,,${SSH_PORT},,22"
+VBoxManage modifyvm "$DOKARR_MACHINE_NAME" --natpf1 "${DOKARR_MACHINE_NAME}-http,tcp,,${HTTP_PORT},,${HTTP_PORT}"
+VBoxManage modifyvm "$DOKARR_MACHINE_NAME" --natpf1 "${DOKARR_MACHINE_NAME}-https,tcp,,${HTTPS_PORT},,${HTTPS_PORT}"
+VBoxManage modifyvm "$DOKARR_MACHINE_NAME" --natpf1 "${DOKARR_MACHINE_NAME}-plex,tcp,,${PLEX_PORT},,${PLEX_PORT}"
+
+# set nat alias mode to not rewrite ip addresses to allow
+# nginx and other services to see real remote ip addresses
+VBoxManage modifyvm "$DOKARR_MACHINE_NAME" --nataliasmode1 proxyonly,sameports
+
+# start the vm
+docker-machine start "$DOKARR_MACHINE_NAME"
+
+# run provision scripts
+"$(dirname ${BASH_SOURCE[0]})/provision"
+
+# restart docker-machine
+docker-machine stop "$DOKARR_MACHINE_NAME"
+docker-machine start "$DOKARR_MACHINE_NAME"
+
+# add a persistent route to the internal docker network on the host
+# fixme this is windows specific and requires administrator privileges
+DOCKER_MACHINE_IP=$(docker-machine ip "$DOKARR_MACHINE_NAME")
+route delete 172.16.0.0 MASK 255.248.0.0 2>/dev/null
+route add -p 172.16.0.0 MASK 255.248.0.0 $DOCKER_MACHINE_IP
+
+# write docker-machine shell env file
+DOKARR_MACHINE_PATH=$(cd ~/.docker/machine/machines/"$DOKARR_MACHINE_NAME" && pwd)
+docker-machine env --shell sh "$DOKARR_MACHINE_NAME" > "$DOKARR_MACHINE_PATH/agent.env"

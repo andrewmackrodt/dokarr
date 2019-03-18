@@ -1,0 +1,36 @@
+#!/usr/bin/with-contenv bash
+
+DATABASE_PATH="${DATABASE_PATH:-/config}"
+FILESYSTEM=$(df "$DATABASE_PATH" | tail -n1 | awk '{ print $1 }')
+TYPE=$(mount | awk '$1 == "'$FILESYSTEM'" { print $5 }' | tail -n1)
+PUID=${PUID:-1000}
+
+if [[ "${DATABASE_FILES}" == "" ]] \
+        || [[ "${TYPE}" != "cifs" ]] \
+        && [[ "${TYPE}" != "nfs" ]]; then
+    exit 0
+fi
+
+for file in $DATABASE_FILES; do
+    for ext in db db-shm db-wal; do
+        src="$DATABASE_PATH/$file.$ext"
+        dst="/databases/$file.$ext"
+        bak="$DATABASE_PATH/$file.$ext~"
+
+        # remove src -> volume symlink
+        if [[ -L "$src" ]]; then
+            rm "$src"
+        fi
+
+        # restore src path by copying the database
+        # from the volume
+
+        if [[ -s "$dst" ]]; then
+            cp "$dst" "$src"
+        fi
+
+        # backup files will be preserved in case of
+        # an error and manual intervention may be
+        # required to fix any issue
+    done
+done

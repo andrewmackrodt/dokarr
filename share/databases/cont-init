@@ -1,0 +1,86 @@
+#!/usr/bin/with-contenv bash
+
+DATABASE_PATH="${DATABASE_PATH:-/config}"
+FILESYSTEM=$(df "$DATABASE_PATH" | tail -n1 | awk '{ print $1 }')
+TYPE=$(mount | awk '$1 == "'$FILESYSTEM'" { print $5 }' | tail -n1)
+PUID=${PUID:-1000}
+
+if [[ "${DATABASE_FILES}" == "" ]] \
+        || [[ "${TYPE}" != "cifs" ]] \
+        && [[ "${TYPE}" != "nfs" ]]; then
+    exit 0
+fi
+
+if [[ ! -d /databases ]]; then
+    echo -e "\033[0;31mERROR: Volume not found: /databases\e[0;0m" >&2
+    exit 1
+fi
+
+if [[ ! -d "$DATABASE_PATH" ]]; then
+    mkdir -p "$DATABASE_PATH"
+    chown $PUID:$PUID "$DATABASE_PATH"
+fi
+
+for file in $DATABASE_FILES; do
+    for ext in db db-shm db-wal; do
+        src="$DATABASE_PATH/$file.$ext"
+        dst="/databases/$file.$ext"
+        bak="$DATABASE_PATH/$file.$ext~"
+        sql="$DATABASE_PATH/$file.sql"
+
+        # remove src symlinks from previous runs
+        if [[ -L "$src" ]]; then
+            rm "$src"
+        fi
+
+        # delete empty src files
+        if [[ -f "$src" ]] && [[ ! -s "$src" ]]; then
+            rm "$src"
+        fi
+
+        # delete empty backup files
+        if [[ -f "$bak" ]] && [[ ! -s "$bak" ]]; then
+            rm "$bak"
+        fi
+
+        if [[ -s "$src" ]]; then
+            # copy to dst and rename to *~, src files are
+            # always copied to the volume even if a file
+            # already exists there
+
+            cp -f "$src" "$dst"
+            mv -f "$src" "$bak"
+        elif [[ ! -s "$dst" ]]; then
+            # otherwise create dst if it does not exist or
+            # is an empty file
+
+            if [[ -s "$bak" ]]; then
+                # copy backup files to the volume, these
+                # should only exist if there was a crash
+                # and the volume has been removed
+
+                cp -f "$bak" "$dst"
+            elif [[ -s "$sql" ]]; then
+                # create a new database from sql dump to
+                # avoid corrupt database panics in nzbdrone
+
+                sqlite3 "$dst" < "$sql"
+                sqlite3 "$dst" "analyze"
+            else
+                # ensure a file always exists or symlink
+                # creation will fail
+                touch "$dst"
+            fi
+        fi
+
+        # make database in volume writeable
+        chown $PUID:$PUID "$dst"
+        chmod 0666 "$dst"
+
+        # now that src path does not exist, we create a
+        # symlink to map src to the volume file
+
+        ln -fs "$dst" "$src"
+        chown -h $PUID:$PUID "$src"
+    done
+done

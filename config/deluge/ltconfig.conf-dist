@@ -1,0 +1,16 @@
+{
+  "file": 1, 
+  "format": 1
+}{
+  "apply_on_start": true, 
+  "settings": {
+    "allow_multiple_connections_per_ip": true, 
+    "announce_to_all_tiers": true, 
+    "enable_incoming_utp": false, 
+    "enable_outgoing_utp": false, 
+    "peer_connect_timeout": 30, 
+    "tracker_completion_timeout": 45, 
+    "tracker_receive_timeout": 30, 
+    "upload_rate_limit": 81920
+  }
+}

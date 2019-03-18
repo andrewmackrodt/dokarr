@@ -1,0 +1,46 @@
+# ignore runtime folders
+cache/*
+config/*
+media/*
+share/nginx/html/.well-known/*
+backups
+
+# ignore environment files
+.env
+
+# other
+.idea/*
+*~
+
+# deluge whitelist
+!config/deluge
+config/deluge/*
+!config/deluge/*.conf-dist
+
+# lidarr whitelist
+!config/lidarr
+config/lidarr/*
+!config/lidarr/*.sql
+
+# nginx whitelist
+!config/nginx
+config/nginx/*
+!config/nginx/nginx.tmpl
+!config/nginx/conf.d
+config/nginx/conf.d/*
+!config/nginx/conf.d/custom.conf
+
+# nzbget whitelist
+!config/nzbget
+config/nzbget/*
+!config/nzbget/nzbget.conf-dist
+
+# radarr whitelist
+!config/radarr
+config/radarr/*
+!config/radarr/*.sql
+
+# sonarr whitelist
+!config/sonarr
+config/sonarr/*
+!config/sonarr/*.sql

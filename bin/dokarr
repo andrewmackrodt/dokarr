@@ -1,0 +1,118 @@
+#!/bin/bash
+
+export DOKARR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+cd "$DOKARR_PATH"
+
+# source the environment file
+if [[ ! -f .env ]]; then
+    echo -e "\033[0;33mWARNING: File not found: .env\033[0;0m" >&2
+    echo -e "\033[0;34mINFO: File copy: .env-dist -> .env\033[0;0m" >&2
+    cp .env-dist .env
+fi
+. .env
+
+# set default environment variables
+DOKARR_MACHINE_NAME=${DOKARR_MACHINE_NAME:-dokarr}
+DOKARR_CPUS=${DOKARR_CPUS:-4}
+DOKARR_MEM=${DOKARR_MEM:-3072}
+DOKARR_DISK_GB=${DOKARR_DISK_GB:-100}
+HTTP_PORT=${HTTP_PORT:-8080}
+HTTPS_PORT=${HTTPS_PORT:-8443}
+PLEX_PORT=${PLEX_PORT:-32400}
+SSH_PORT=${SSH_PORT:-2222}
+
+# export environment variables
+for v in $(sed -n -E 's/^#?([A-Z][A-Z0-9_]+)=.*/\1/p' .env-dist); do
+    export $v
+done
+
+ERROR_COUNT=0
+
+# check required environment variables are set
+for v in DOKARR_MACHINE_NAME CIFS_USERNAME CIFS_PASSWORD; do
+    if [[ "${!v}" == "" ]]; then
+        ERROR_COUNT=$(expr $ERROR_COUNT + 1)
+        echo -e "\033[0;31mERROR: $v is not set\033[0;0m" >&2
+    fi
+done
+
+# abort if there are any errors
+[[ "$ERROR_COUNT" == 0 ]] || exit 1
+
+exec_docker_compose () {
+    if [[ "$MSYSTEM" == "MINGW64" ]]; then
+        winpty docker-compose "$@"
+    else
+        docker-compose "$@"
+    fi
+}
+
+LIB_PATH="$DOKARR_PATH/machine/lib"
+
+# special handling if one argument has been specified
+if [[ $# == 1 ]]; then
+    case "$1" in
+    backup)
+        "$LIB_PATH/backup"
+        exit 0
+    ;;
+    clean)
+        find config/ -maxdepth 7 \
+            -not -path '*/Cache/*' \
+            -not -path '*/Media/*' \
+            -not -path '*/Metadata/*' \
+            -regextype posix-egrep \
+            -iregex '.+/logs/[^/]+\.txt(\.[0-9]+)?|.+/[^/]+\.log(\.[0-9]+)?' \
+            -delete
+        exit 0
+    ;;
+    create:vm)
+        "$LIB_PATH/create"
+        exit 0
+    ;;
+    daemon|-D)
+        exec_docker_compose up -d && exec_docker_compose logs -f
+        exit 0
+    ;;
+    destroy:vm)
+        docker-machine rm -f "$DOKARR_MACHINE_NAME"
+        exit 0
+    ;;
+    env)
+        echo "DOKARR_MACHINE_NAME=$DOKARR_MACHINE_NAME"
+        echo "DOKARR_PATH=$DOKARR_PATH"
+        docker-machine env --shell sh "$DOKARR_MACHINE_NAME" 2>/dev/null
+        exit 0
+    ;;
+    env:update)
+        WAN_IP=$(curl -s "https://api.ipify.org")
+        LAN_IP=$(netstat -rn | grep -E 'default|0.0.0.0' | head -n1 | sed -E 's/ +[0-9]+$//' | awk '{ print $NF }')
+        # *nix return the interface name so an extra step is needed to get LAN_IP
+        if ! [[ "$LAN_IP" =~ ^[0-9]{2,3}\. ]]; then
+            LAN_IP=$(ip a show "$LAN_IP" | sed -n -E 's#.+inet ([^/]+).+#\1#p')
+        fi
+        cp -f .env .env~
+        grep -qE '^#?WAN_IP=' .env && perl -i -pe "s/^#?WAN_IP=.*/WAN_IP=$WAN_IP/" .env \
+            || echo "WAN_IP=$WAN_IP" >> .env
+        grep -qE '^#?LAN_IP=' .env && perl -i -pe "s/^#?LAN_IP=.*/LAN_IP=$LAN_IP/" .env \
+            || echo "LAN_IP=$LAN_IP" >> .env
+        exit 0
+    ;;
+    path)
+        pwd
+        exit 0
+    ;;
+    provision)
+        "$LIB_PATH/provision"
+        exit 0
+    ;;
+    ssh)
+        docker-machine ssh "$DOKARR_MACHINE_NAME"
+        exit 0
+    ;;
+    esac
+fi
+
+# pass arguments to docker-compose
+exec_docker_compose "$@"

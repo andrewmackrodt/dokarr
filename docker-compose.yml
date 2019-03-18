@@ -1,0 +1,359 @@
+---
+version: "2.1"
+
+x-logging:
+  &default-logging
+  options:
+    max-size: "100k"
+    max-file: "5"
+  driver: json-file
+
+services:
+  #=============================================================================
+  # media servers
+  #=============================================================================
+
+  plex:
+    image: linuxserver/plex
+    container_name: plex
+    logging: *default-logging
+    environment:
+      # plex
+      - DATABASE_FILES=com.plexapp.dlna com.plexapp.plugins.library.blobs com.plexapp.plugins.library
+      - DATABASE_PATH=/config/Library/Application Support/Plex Media Server/Plug-in Support/Databases
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-Europe/London}
+      - VERSION=docker
+      # dockergen
+      - "VIRTUAL_HOST=\
+          ${HTTP_HOST:-127.0.0.1.xip.io},\
+          ~^[0-9a-f:.]+\\.xip\\.io$$,\
+          plex.${DEV_DNS_TLD:-dokarr}"
+      - CERT_NAME=${HTTP_HOST:-127.0.0.1.xip.io}
+      - VIRTUAL_PORT=32400
+      # nginx-proxy-letsencrypt
+      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=${HTTP_HOST:-}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
+    ports:
+      - ${PLEX_PORT:-32400}:32400
+    volumes:
+      - ./config/plex:/config
+      - plex_database:/databases
+      - ./cache/plex:/transcode
+      - ./data:/data
+      - ./share/databases/cont-init:/etc/cont-init.d/20-database
+      - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
+    restart: unless-stopped
+
+  #=============================================================================
+  # media management
+  #=============================================================================
+
+  sonarr:
+    image: linuxserver/sonarr
+    container_name: sonarr
+    logging: *default-logging
+    environment:
+      # sonarr
+      - DATABASE_FILES=nzbdrone logs
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-Europe/London}
+      - XDG_CONFIG_HOME=/tmp/xdg
+      # dockergen
+      - "VIRTUAL_HOST=\
+          sonarr.${HTTP_HOST:-127.0.0.1.xip.io},\
+          ~^sonarr\\.[0-9a-f:.]+\\.xip\\.io$$,\
+          sonarr.${DEV_DNS_TLD:-dokarr}"
+      - CERT_NAME=sonarr.${HTTP_HOST:-127.0.0.1.xip.io}
+      - VIRTUAL_PORT=8989
+      # nginx-proxy-letsencrypt
+      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=sonarr.${HTTP_HOST:-}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
+    volumes:
+      - sonarr_database:/databases
+      - ./config/sonarr:/config
+      - ./data:/data
+      - ./share/databases/cont-init:/etc/cont-init.d/20-database
+      - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
+    restart: unless-stopped
+
+  radarr:
+    image: linuxserver/radarr
+    container_name: radarr
+    logging: *default-logging
+    environment:
+      # radarr
+      - DATABASE_FILES=nzbdrone logs
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-Europe/London}
+      - XDG_CONFIG_HOME=/tmp/xdg
+      # dockergen
+      - "VIRTUAL_HOST=\
+          radarr.${HTTP_HOST:-127.0.0.1.xip.io},\
+          ~^radarr\\.[0-9a-f:.]+\\.xip\\.io$$,\
+          radarr.${DEV_DNS_TLD:-dokarr}"
+      - CERT_NAME=radarr.${HTTP_HOST:-127.0.0.1.xip.io}
+      - VIRTUAL_PORT=7878
+      # nginx-proxy-letsencrypt
+      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=radarr.${HTTP_HOST:-}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
+    volumes:
+      - radarr_database:/databases
+      - ./config/radarr:/config
+      - ./data:/data
+      - ./share/databases/cont-init:/etc/cont-init.d/20-database
+      - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
+    restart: unless-stopped
+
+  lidarr:
+    image: linuxserver/lidarr
+    container_name: lidarr
+    logging: *default-logging
+    environment:
+      # lidarr
+      - DATABASE_FILES=lidarr logs
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-Europe/London}
+      - XDG_CONFIG_HOME=/tmp/xdg
+      # dockergen
+      - "VIRTUAL_HOST=\
+          lidarr.${HTTP_HOST:-127.0.0.1.xip.io},\
+          ~^lidarr\\.[0-9a-f:.]+\\.xip\\.io$$,\
+          lidarr.${DEV_DNS_TLD:-dokarr}"
+      - CERT_NAME=lidarr.${HTTP_HOST:-127.0.0.1.xip.io}
+      - VIRTUAL_PORT=8686
+      # nginx-proxy-letsencrypt
+      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=lidarr.${HTTP_HOST:-}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
+    volumes:
+      - lidarr_database:/databases
+      - ./config/lidarr:/config
+      - ./data:/data
+      - ./share/databases/cont-init:/etc/cont-init.d/20-database
+      - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
+    restart: unless-stopped
+
+  #=============================================================================
+  # indexer middleware
+  #=============================================================================
+
+  jackett:
+    image: linuxserver/jackett
+    container_name: jackett
+    logging: *default-logging
+    environment:
+      # jackett
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-Europe/London}
+      # dockergen
+      - "VIRTUAL_HOST=\
+          jackett.${HTTP_HOST:-127.0.0.1.xip.io},\
+          ~^jackett\\.[0-9a-f:.]+\\.xip\\.io$$,\
+          jackett.${DEV_DNS_TLD:-dokarr}"
+      - CERT_NAME=jackett.${HTTP_HOST:-127.0.0.1.xip.io}
+      - VIRTUAL_PORT=9117
+      # nginx-proxy-letsencrypt
+      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=jackett.${HTTP_HOST:-}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
+    volumes:
+      - ./config/jackett:/config
+      - ./data:/data
+    depends_on:
+      - http-proxy
+    restart: unless-stopped
+
+  #=============================================================================
+  # download clients
+  #=============================================================================
+
+  nzbget:
+    image: linuxserver/nzbget
+    container_name: nzbget
+    logging: *default-logging
+    environment:
+      # nzbget
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-Europe/London}
+      # dockergen
+      - "VIRTUAL_HOST=\
+          nzbget.${HTTP_HOST:-127.0.0.1.xip.io},\
+          ~^nzbget\\.[0-9a-f:.]+\\.xip\\.io$$,\
+          nzbget.${DEV_DNS_TLD:-dokarr}"
+      - CERT_NAME=nzbget.${HTTP_HOST:-127.0.0.1.xip.io}
+      - VIRTUAL_PORT=6789
+      # nginx-proxy-letsencrypt
+      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=nzbget.${HTTP_HOST:-}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
+    volumes:
+      - ./config/nzbget:/config
+      - ./share/nzbget:/usr/share/nzbget
+      - ./data:/data
+    restart: unless-stopped
+
+  deluge:
+    image: linuxserver/deluge
+    container_name: deluge
+    logging: *default-logging
+    network_mode: service:pia
+    entrypoint: /usr/local/bin/init
+    environment:
+      # deluge
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-Europe/London}
+      - UMASK_SET=002
+      # dockergen
+      - NETWORK_ACCESS=internal
+    volumes:
+      - ./config/deluge:/config
+      - ./data:/data
+      - ./share/deluge/init:/usr/local/bin/init
+    depends_on:
+      - pia
+    restart: unless-stopped
+
+  #=============================================================================
+  # http reverse proxy
+  #=============================================================================
+
+  nginx:
+    image: jwilder/nginx-proxy
+    container_name: nginx
+    logging: *default-logging
+    ports:
+      - ${HTTP_PORT:-8080}:80
+      - ${HTTPS_PORT:-8443}:443
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./config/nginx/nginx.tmpl:/app/nginx.tmpl
+      - ./config/nginx/certs:/etc/nginx/certs
+      - ./config/nginx/certs:/etc/nginx/dhparam
+      - ./config/nginx/conf.d:/etc/nginx/conf.d
+      - ./config/nginx/vhost.d:/etc/nginx/vhost.d
+      - ./share/nginx/html:/usr/share/nginx/html
+    restart: unless-stopped
+
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: letsencrypt
+    logging: *default-logging
+    volumes_from:
+      - nginx
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - nginx
+    restart: unless-stopped
+
+  #=============================================================================
+  # privacy
+  #=============================================================================
+
+  pia:
+    image: qmcgaw/private-internet-access
+    container_name: pia
+    logging: *default-logging
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    ports:
+      # deluge
+      - 8112:8112
+      # http-proxy
+      - 8888:8888
+    environment:
+      # pia
+      - USER=$PIA_USERNAME
+      - PASSWORD=$PIA_PASSWORD
+      - REGION=${PIA_REGION:-DE Berlin}
+      - PROTOCOL=${PIA_PROTOCOL:-udp}
+      - ENCRYPTION=${PIA_ENCRYPTION:-normal}
+      - EXTRA_SUBNETS=172.16.0.0/12,10.0.0.0/8
+      # dockergen
+      - "VIRTUAL_HOST=\
+          deluge.${HTTP_HOST:-127.0.0.1.xip.io},\
+          ~^deluge\\.[0-9a-f:.]+\\.xip\\.io$$,\
+          deluge.${DEV_DNS_TLD:-dokarr}"
+      - CERT_NAME=deluge.${HTTP_HOST:-127.0.0.1.xip.io}
+      - VIRTUAL_PORT=8112
+      # nginx-proxy-letsencrypt
+      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=deluge.${HTTP_HOST:-}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
+    restart: unless-stopped
+
+  http-proxy:
+    image: dannydirect/tinyproxy
+    command: ANY
+    container_name: http-proxy
+    logging: *default-logging
+    network_mode: service:pia
+    environment:
+      # dockergen
+      - NETWORK_ACCESS=internal
+    depends_on:
+      - pia
+    restart: unless-stopped
+
+  #=============================================================================
+  # container management
+  #=============================================================================
+
+  portainer:
+    image: portainer/portainer
+    container_name: portainer
+    logging: *default-logging
+    environment:
+      # portainer
+      - DATABASE_FILES=portainer
+      - DATABASE_PATH=/data
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-Europe/London}
+      - VERSION=docker
+      # dockergen
+      - "VIRTUAL_HOST=\
+          portainer.${HTTP_HOST:-127.0.0.1.xip.io},\
+          ~^portainer\\.[0-9a-f:.]+\\.xip\\.io$$,\
+          portainer.${DEV_DNS_TLD:-dokarr}"
+      - CERT_NAME=portainer.${HTTP_HOST:-127.0.0.1.xip.io}
+      - VIRTUAL_PORT=9000
+      # nginx-proxy-letsencrypt
+      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=portainer.${HTTP_HOST:-}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/portainer:/data
+    restart: unless-stopped
+
+  #=============================================================================
+  # dev
+  #=============================================================================
+
+  # devdns:
+  #   image: andrewmackrodt/devdns
+  #   container_name: devdns
+  #   logging: *default-logging
+  #   ports:
+  #     - 53:53/udp
+  #   environment:
+  #     # devdns
+  #     - DNS_DOMAIN=${DEV_DNS_TLD:-dokarr}
+  #     - NETWORK=auto
+  #     # dockergen
+  #     - NETWORK_ACCESS=internal
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   restart: unless-stopped
+
+volumes:
+  plex_database:
+  sonarr_database:
+  radarr_database:
+  lidarr_database:
