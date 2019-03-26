@@ -4,7 +4,7 @@ Dockerized media management with letsencrypt support.
 
 ### Services
 
-|>|>
+| - | description
 |---------------------------------------------------|----------
 | [![plex][plex-logo]][plex-link]                   | **Plex** - organize all of your personal media so you can enjoy it no matter where you are.
 | [![sonarr][sonarr-logo]][sonarr-link]             | **Sonarr** - smart PVR for newsgroup and bittorrent users.
