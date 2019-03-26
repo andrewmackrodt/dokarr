@@ -1,6 +1,7 @@
 # ignore runtime folders
 cache/*
 config/*
+data/*
 media/*
 share/nginx/html/.well-known/*
 backups

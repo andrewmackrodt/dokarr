@@ -3,12 +3,11 @@
 cd "$DOKARR_PATH"
 
 BACKUP_FILENAME="dokarr-$(date '+%Y%m%d_%H%M').tgz"
-BACKUP_FILEPATH="$PWD/.dokarr/backups/$BACKUP_FILENAME"
+BACKUP_FILEPATH="$PWD/backups/$BACKUP_FILENAME"
 
 echo -n "Creating backup $BACKUP_FILEPATH ... " >&2
 
 tar zcf "$BACKUP_FILEPATH" \
-    --exclude='backups/*' \
     --exclude='config/plex/Library/Application Support/Plex Media Server/Cache/*' \
     --exclude='config/plex/Library/Application Support/Plex Media Server/Crash Reports/*' \
     --exclude='config/plex/Library/Application Support/Plex Media Server/Logs/*' \
@@ -27,6 +26,6 @@ tar zcf "$BACKUP_FILEPATH" \
     --exclude='*.log*' \
     --exclude='*.pid' \
     --exclude='.DS_Store' \
-    config/ share/ .dokarr/ *.* .env*
+    config/ .env
 
 echo "OK" >&2
