@@ -63,6 +63,20 @@ to start docker-machine on system boot._
 †† Will also work for Mac OS and Linux users but there's no reason to use a CIFS mount
    unless using VirtualBox.
 
+### Windows & Linux Interoperability
+
+Dokarr is designed to work across operating systems if using a disk formatted as NTFS.
+Due to differences in symlink handling between CIFS [mfsymlinks](https://wiki.samba.org/index.php/UNIX_Extensions#Minshall.2BFrench_symlinks) 
+and POSIX symlinks a conversion process must be run to recreate symlinks once booted
+to the new OS. The `convert-symlinks` script is provided to handle this process. Note
+that this is a **very slow** operation depending on the size of your media library.
+
+
+```
+./machine/share/convert-symlinks.sh -r "config/nginx/certs"
+./machine/share/convert-symlinks.sh -r "config/plex/Library/Application Support/Plex Media Server/Metadata"
+```
+
 ### Reverse Proxy
 The compose file is configured to make all services available via [*.xip.io](http://xip.io/),
 e.g. `plex.192.168.100.99.xip.io`, the default port for the reverse proxy is `8080`,
