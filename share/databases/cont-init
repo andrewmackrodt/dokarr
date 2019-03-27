@@ -12,7 +12,7 @@ if [[ "${DATABASE_FILES}" == "" ]] \
 fi
 
 if [[ ! -d /databases ]]; then
-    echo -e "\033[0;31mERROR: Volume not found: /databases\e[0;0m" >&2
+    echo -e "\033[0;31mERROR: Volume not found: /databases\033[0;0m" >&2
     exit 1
 fi
 
@@ -22,65 +22,82 @@ if [[ ! -d "$DATABASE_PATH" ]]; then
 fi
 
 for file in $DATABASE_FILES; do
-    for ext in db db-shm db-wal; do
-        src="$DATABASE_PATH/$file.$ext"
-        dst="/databases/$file.$ext"
-        bak="$DATABASE_PATH/$file.$ext~"
-        sql="$DATABASE_PATH/$file.sql"
+    database="$DATABASE_PATH/$file.db"
+    wal="$DATABASE_PATH/$file.db-wal"
+    shm="$DATABASE_PATH/$file.db-shm"
 
-        # remove src symlinks from previous runs
-        if [[ -L "$src" ]]; then
-            rm "$src"
+    # remove symlinks from previous runs
+    [[ -L "$database" ]] && rm "$database"
+    [[ -L "$wal" ]] && rm "$wal"
+    [[ -L "$shm" ]] && rm "$shm"
+
+    databaseVol="/databases/$file.db"
+    walVol="/databases/$file.db-wal"
+    shmVol="/databases/$file.db-shm"
+
+    if [[ -s "$database" ]] || [[ -s "$databaseVol" ]]; then
+        # remove backup files if database is not empty, this should be
+        # handled by cont-finish but if we're switching OS then these
+        # files may still exist
+
+        rm -f "$database~" "$wal~" "$shm~" 2>/dev/null
+    fi
+
+    if [[ ! -s "$database" ]]; then
+        # remove stale wal files, they don't have use without a database
+        # to use with and should not exist under normal circumstances
+
+        rm -f "$wal" "$shm" 2>/dev/null
+
+        # attempt recovery using files in the volume or by renaming
+        # backup files if they exist
+
+        if [[ -s "$databaseVol" ]]; then
+            # volume recovery
+
+            cp -f "$databaseVol" "$database"
+            [[ -f "$walVol" ]] && cp -f "$walVol" "$wal"
+            [[ -f "$shmVol" ]] && cp -f "$shmVol" "$shm"
+        elif [[ -s "$database~" ]]; then
+            # backup recovery
+
+            mv "$database~" "$database"
+            [[ -f "$wal~" ]] && mv -f "$wal~" "$wal"
+            [[ -f "$shm~" ]] && mv -f "$shm~" "$shm"
         fi
+    fi
 
-        # delete empty src files
-        if [[ -f "$src" ]] && [[ ! -s "$src" ]]; then
-            rm "$src"
-        fi
+    # files in the volume are no longer required, delete them
+    rm -f "$databaseVol" "$walVol" "$shmVol" 2>/dev/null
 
-        # delete empty backup files
-        if [[ -f "$bak" ]] && [[ ! -s "$bak" ]]; then
-            rm "$bak"
-        fi
+    # if we still don't have a database then we cannot proceed with
+    # using the volume as the app will panic with a corrupt database
+    # error, it will be mounted the next time the container is run
 
-        if [[ -s "$src" ]]; then
-            # copy to dst and rename to *~, src files are
-            # always copied to the volume even if a file
-            # already exists there
+    if [[ ! -s "$database" ]]; then
+        echo "ERR: $database does not exist, cannot use volume mount" >&2
 
-            cp -f "$src" "$dst"
-            mv -f "$src" "$bak"
-        elif [[ ! -s "$dst" ]]; then
-            # otherwise create dst if it does not exist or
-            # is an empty file
+        continue
+    fi
 
-            if [[ -s "$bak" ]]; then
-                # copy backup files to the volume, these
-                # should only exist if there was a crash
-                # and the volume has been removed
+    # move or create files so we can create symlinks later
+    [[ -f "$database" ]] && mv -f "$database" "$database~" || touch "$database~"
+    [[ -f "$wal" ]] && mv -f "$wal" "$wal~" || touch "$wal~"
+    [[ -f "$shm" ]] && mv -f "$shm" "$shm~" || touch "$shm~"
 
-                cp -f "$bak" "$dst"
-            elif [[ -s "$sql" ]]; then
-                # create a new database from sql dump to
-                # avoid corrupt database panics in nzbdrone
+    # copy files to the volume
+    cp -f "$database~" "$databaseVol"
+    cp -f "$wal~" "$walVol"
+    cp -f "$shm~" "$shmVol"
 
-                sqlite3 "$dst" < "$sql"
-                sqlite3 "$dst" "analyze"
-            else
-                # ensure a file always exists or symlink
-                # creation will fail
-                touch "$dst"
-            fi
-        fi
+    # make files in volume writeable
+    chown $PUID:$PUID "$databaseVol" "$walVol" "$shmVol"
+    chmod 0666 "$databaseVol" "$walVol" "$shmVol"
 
-        # make database in volume writeable
-        chown $PUID:$PUID "$dst"
-        chmod 0666 "$dst"
+    # create symlinks
+    ln -fns "$databaseVol" "$database"
+    ln -fns "$walVol" "$wal"
+    ln -fns "$shmVol" "$shm"
 
-        # now that src path does not exist, we create a
-        # symlink to map src to the volume file
-
-        ln -fs "$dst" "$src"
-        chown -h $PUID:$PUID "$src"
-    done
+    chown -h $PUID:$PUID "$database" "$wal" "$shm"
 done

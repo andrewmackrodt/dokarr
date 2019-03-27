@@ -11,26 +11,47 @@ if [[ "${DATABASE_FILES}" == "" ]] \
     exit 0
 fi
 
+if [[ ! -d /databases ]]; then
+    echo -e "\033[0;31mERROR: Volume not found: /databases\033[0;0m" >&2
+    exit 1
+fi
+
 for file in $DATABASE_FILES; do
-    for ext in db db-shm db-wal; do
-        src="$DATABASE_PATH/$file.$ext"
-        dst="/databases/$file.$ext"
-        bak="$DATABASE_PATH/$file.$ext~"
+    database="$DATABASE_PATH/$file.db"
+    wal="$DATABASE_PATH/$file.db-wal"
+    shm="$DATABASE_PATH/$file.db-shm"
 
-        # remove src -> volume symlink
-        if [[ -L "$src" ]]; then
-            rm "$src"
-        fi
+    databaseVol="/databases/$file.db"
+    walVol="/databases/$file.db-wal"
+    shmVol="/databases/$file.db-shm"
 
-        # restore src path by copying the database
-        # from the volume
+    # if the application has deleted the symlink then we need to
+    # delete the file in the volume so that it is not accidentally
+    # restored. the app does not know about the volume file and
+    # either intended the paths deletion or has recreated it in
+    # place, i.e. not in the volume
 
-        if [[ -s "$dst" ]]; then
-            cp "$dst" "$src"
-        fi
+    [[ ! -L "$database" ]] && rm -f "$databaseVol" 2>/dev/null
+    [[ ! -L "$wal" ]] && rm -f "$walVol" 2>/dev/null
+    [[ ! -L "$shm" ]] && rm -f "$shmVol" 2>/dev/null
 
-        # backup files will be preserved in case of
-        # an error and manual intervention may be
-        # required to fix any issue
-    done
+    # the above should never occur, during normal operation we
+    # need to remove the links so we can restore the volume files
+
+    [[ -L "$database" ]] && rm -f "$database"
+    [[ -L "$wal" ]] && rm -f "$wal"
+    [[ -L "$shm" ]] && rm -f "$shm"
+
+    # if the app has created a new file, we need to remove the
+    # backup and volume files as they do not hold the correct data
+
+    [[ -f "$database" ]] && rm -f "$database~" "$databaseVol" 2>/dev/null
+    [[ -f "$wal" ]] && rm -f "$wal~" "$walVol" 2>/dev/null
+    [[ -f "$shm" ]] && rm -f "$shm~" "$shmVol" 2>/dev/null
+
+    # finally any files remaining in the volume can be restored
+
+    [[ -f "$databaseVol" ]] && cp -f "$databaseVol" "$database" && rm -f "$database~" 2>/dev/null
+    [[ -f "$walVol" ]] && cp -f "$walVol" "$wal" && rm -f "$wal~" 2>/dev/null
+    [[ -f "$shmVol" ]] && cp -f "$shmVol" "$shm" && rm -f "$shm~" 2>/dev/null
 done
