@@ -198,7 +198,7 @@ server {
 	listen [::]:80 {{ $default_server }};
 	{{ end }}
 	access_log /var/log/nginx/access.log vhost;
-    if ( ! $remote_addr ~ ^192\.168\.|^172\.(1[7-9]|2[09])\.) {
+    if ( $remote_addr !~ ^(192\.168\.|172\.(1[7-9]|2[0-9])\.) ) {
         return 301 https://$host$request_uri;
     }
 	location / {
