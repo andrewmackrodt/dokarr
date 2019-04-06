@@ -52,8 +52,6 @@ if [[ ! -f ltConfig-*.egg ]]; then
     [[ $? == 0 ]] && echo "OK" 2>&1 || "ERR" 2>&1
 fi
 
-sleep 30
-
 # start deluge
 cd ~/
 exec /init
