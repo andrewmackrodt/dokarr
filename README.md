@@ -7,6 +7,7 @@ Dockerized media management with letsencrypt support.
 | - | description
 |---------------------------------------------------|----------
 | [![plex][plex-logo]][plex-link]                   | **Plex** - organize all of your personal media so you can enjoy it no matter where you are.
+| [![tautulli][tautulli-logo]][tautulli-link]       | **Tautulli** - monitoring and tracking tool for Plex Media Server.
 | [![sonarr][sonarr-logo]][sonarr-link]             | **Sonarr** - smart PVR for newsgroup and bittorrent users.
 | [![radarr][radarr-logo]][radarr-link]             | **Radarr** - a fork of Sonarr to work with movies à la Couchpotato.
 | [![lidarr][lidarr-logo]][lidarr-link]             | **Lidarr** - looks and smells like Sonarr but made for music.
@@ -20,6 +21,8 @@ Dockerized media management with letsencrypt support.
 
 [plex-link]: https://hub.docker.com/r/linuxserver/plex
 [plex-logo]: docs/images/plex.png
+[tautulli-link]: https://hub.docker.com/r/linuxserver/tautulli
+[tautulli-logo]: docs/images/tautulli.png
 [sonarr-link]: https://hub.docker.com/r/linuxserver/sonarr
 [sonarr-logo]: docs/images/sonarr.png
 [radarr-link]: https://hub.docker.com/r/linuxserver/radarr

@@ -46,6 +46,29 @@ services:
       - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
     restart: unless-stopped
 
+  tautulli:
+    image: linuxserver/tautulli
+    container_name: tautulli
+    environment:
+      # tautulli
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-Europe/London}
+      # dockergen
+      - "VIRTUAL_HOST=\
+          tautulli.${HTTP_HOST:-127.0.0.1.xip.io},\
+          ~^tautulli\\.[0-9a-f:.]+\\.xip\\.io$$,\
+          tautulli.${DEV_DNS_TLD:-dokarr}"
+      - CERT_NAME=tautulli.${HTTP_HOST:-127.0.0.1.xip.io}
+      - VIRTUAL_PORT=8181
+      # nginx-proxy-letsencrypt
+      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=tautulli.${HTTP_HOST:-}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
+    volumes:
+      - ./config/tautulli:/config
+      - ./config/plex/Library/Application Support/Plex Media Server/Logs:/logs
+    restart: unless-stopped
+
   #=============================================================================
   # media management
   #=============================================================================
