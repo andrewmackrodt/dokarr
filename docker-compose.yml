@@ -21,8 +21,8 @@ services:
       # plex
       - DATABASE_FILES=com.plexapp.dlna com.plexapp.plugins.library.blobs com.plexapp.plugins.library
       - DATABASE_PATH=/config/Library/Application Support/Plex Media Server/Plug-in Support/Databases
-      - PUID=1000
-      - PGID=1000
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - VERSION=docker
       # dockergen
@@ -59,8 +59,8 @@ services:
     container_name: tautulli
     environment:
       # tautulli
-      - PUID=1000
-      - PGID=1000
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       # dockergen
       - "VIRTUAL_HOST=\
@@ -88,8 +88,8 @@ services:
     environment:
       # sonarr
       - DATABASE_FILES=nzbdrone logs
-      - PUID=1000
-      - PGID=1000
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - XDG_CONFIG_HOME=/tmp/xdg
       # dockergen
@@ -125,8 +125,8 @@ services:
     environment:
       # radarr
       - DATABASE_FILES=nzbdrone logs
-      - PUID=1000
-      - PGID=1000
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - XDG_CONFIG_HOME=/tmp/xdg
       # dockergen
@@ -162,8 +162,8 @@ services:
     environment:
       # lidarr
       - DATABASE_FILES=lidarr logs
-      - PUID=1000
-      - PGID=1000
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - XDG_CONFIG_HOME=/tmp/xdg
       # dockergen
@@ -202,8 +202,8 @@ services:
     logging: *default-logging
     environment:
       # jackett
-      - PUID=1000
-      - PGID=1000
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       # dockergen
       - "VIRTUAL_HOST=\
@@ -240,8 +240,8 @@ services:
     logging: *default-logging
     environment:
       # nzbget
-      - PUID=1000
-      - PGID=1000
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       # dockergen
       - "VIRTUAL_HOST=\
@@ -275,8 +275,8 @@ services:
     entrypoint: /usr/local/bin/init
     environment:
       # deluge
-      - PUID=1000
-      - PGID=1000
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - UMASK_SET=002
       # dockergen
@@ -392,8 +392,8 @@ services:
       # portainer
       - DATABASE_FILES=portainer
       - DATABASE_PATH=/data
-      - PUID=1000
-      - PGID=1000
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - VERSION=docker
       # dockergen
