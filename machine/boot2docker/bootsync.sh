@@ -37,7 +37,7 @@ chmod 0600 .smbcredentials
 
 # mount the cifs shares
 DOCKER_HOST=$(ip route | awk '$1 == "default" { print $3 }' | head -n1)
-CIFS_VERSION="${CIFS_VERSION:-2.0}"
+CIFS_VERSION="${CIFS_VERSION:-default}"
 CIFS_OPTS="vers=$CIFS_VERSION,uid=1000,gid=1000,file_mode=0777,dir_mode=0777,noperm,nobrl,mfsymlinks,credentials=/var/lib/boot2docker/.smbcredentials"
 if [[ "${CIFS_EXTRA_OPTS:-}" != "" ]]; then
     CIFS_OPTS="$CIFS_OPTS,$CIFS_EXTRA_OPTS"

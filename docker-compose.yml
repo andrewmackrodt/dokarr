@@ -44,6 +44,14 @@ services:
       - ./data:/data
       - ./share/databases/cont-init:/etc/cont-init.d/20-database
       - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
+      # Optional volumes, e.g. to follow symlinks
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
+      # NTFS-3G directory junction mappings
+      - ./share/.NTFS-3G:/${NTFS_DRIVE:-c}/.NTFS-3G
     restart: unless-stopped
 
   tautulli:
@@ -100,6 +108,14 @@ services:
       - ./data:/data
       - ./share/databases/cont-init:/etc/cont-init.d/20-database
       - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
+      # Optional volumes, e.g. to follow symlinks
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
+      # NTFS-3G directory junction mappings
+      - ./share/.NTFS-3G:/${NTFS_DRIVE:-c}/.NTFS-3G
     restart: unless-stopped
 
   radarr:
@@ -129,6 +145,14 @@ services:
       - ./data:/data
       - ./share/databases/cont-init:/etc/cont-init.d/20-database
       - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
+      # Optional volumes, e.g. to follow symlinks
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
+      # NTFS-3G directory junction mappings
+      - ./share/.NTFS-3G:/${NTFS_DRIVE:-c}/.NTFS-3G
     restart: unless-stopped
 
   lidarr:
@@ -158,6 +182,14 @@ services:
       - ./data:/data
       - ./share/databases/cont-init:/etc/cont-init.d/20-database
       - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
+      # Optional volumes, e.g. to follow symlinks
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
+      # NTFS-3G directory junction mappings
+      - ./share/.NTFS-3G:/${NTFS_DRIVE:-c}/.NTFS-3G
     restart: unless-stopped
 
   #=============================================================================
@@ -186,6 +218,14 @@ services:
     volumes:
       - ./config/jackett:/config
       - ./data:/data
+      # Optional volumes, e.g. to follow symlinks
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
+      # NTFS-3G directory junction mappings
+      - ./share/.NTFS-3G:/${NTFS_DRIVE:-c}/.NTFS-3G
     depends_on:
       - http-proxy
     restart: unless-stopped
@@ -217,6 +257,14 @@ services:
       - ./config/nzbget:/config
       - ./share/nzbget:/usr/share/nzbget
       - ./data:/data
+      # Optional volumes, e.g. to follow symlinks
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
+      # NTFS-3G directory junction mappings
+      - ./share/.NTFS-3G:/${NTFS_DRIVE:-c}/.NTFS-3G
     restart: unless-stopped
 
   deluge:
@@ -237,6 +285,14 @@ services:
       - ./config/deluge:/config
       - ./data:/data
       - ./share/deluge/init:/usr/local/bin/init
+      # Optional volumes, e.g. to follow symlinks
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
+      # NTFS-3G directory junction mappings
+      - ./share/.NTFS-3G:/${NTFS_DRIVE:-c}/.NTFS-3G
     depends_on:
       - pia
     restart: unless-stopped
