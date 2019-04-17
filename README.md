@@ -72,12 +72,12 @@ Dokarr is designed to work across operating systems if using a disk formatted as
 Due to differences in symlink handling between CIFS [mfsymlinks](https://wiki.samba.org/index.php/UNIX_Extensions#Minshall.2BFrench_symlinks) 
 and POSIX symlinks a conversion process must be run to recreate symlinks once booted
 to the new OS. The `convert-symlinks` script is provided to handle this process. Note
-that this is a **very slow** operation depending on the size of your media library.
+that this is a **slow** operation depending on the size of your media library.
 
 
 ```
 ./machine/share/convert-symlinks.sh -r "config/nginx/certs"
-./machine/share/convert-symlinks.sh -r "config/plex/Library/Application Support/Plex Media Server/Metadata"
+./machine/share/convert-symlinks.sh --path "*/_combined/posters" "config/plex/Library/Application Support/Plex Media Server/Metadata"Metadata"
 ```
 
 ### Reverse Proxy

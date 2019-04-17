@@ -4,6 +4,7 @@ IFS=$'\n'
 # default options
 DRY_RUN=0
 RECURSIVE=0
+SEARCH_PATH=
 
 # arguments that aren't options
 args=()
@@ -14,6 +15,7 @@ usage() {
             $'\n' "-n, --dry-run" $'\t' "skips symlink creation" \
             $'\n' "-r, --recursive" $'\t' "apply recursively" \
             $'\n' "-h, --help" $'\t' "prints this help test" \
+            $'\n' "-p, --path <path>" $'\t' "detect symlinks in this path only" \
         | column -s$'\t' -t >&2
     echo "" >&2
     exit "${1:-0}"
@@ -32,6 +34,8 @@ while [[ "${#@}" -gt 0 ]]; do
             RECURSIVE=1; ;;
         -h | --help )
             usage; ;;
+        -p | --path )
+            shift; SEARCH_PATH=$1; ;;
         -- )
             break; ;;
         * )
@@ -141,6 +145,16 @@ replace_symlinks () {
     done
 }
 
-echo "Scanning for symlinks:" >&2
-
-recurse_dir "$rootdir"
+if [[ "${SEARCH_PATH:-}" != "" ]]; then
+    echo "Restricting search to path '$SEARCH_PATH':" >&2
+    echo "Scanning for symlinks:" >&2
+    CWD=$PWD
+    read -rd '' -a dirs <<<$(find "$rootdir" -type d -path "$SEARCH_PATH")
+    for d in "${dirs[@]}"; do
+        cd "$CWD"
+        recurse_dir "$d"
+    done
+else
+    echo "Scanning for symlinks:" >&2
+    recurse_dir "$rootdir"
+fi
