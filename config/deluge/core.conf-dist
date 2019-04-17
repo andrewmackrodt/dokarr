@@ -48,6 +48,7 @@
   "max_download_speed_per_torrent": -1, 
   "max_upload_slots_global": 4, 
   "enabled_plugins": [
+    "AutoAdd", 
     "Label", 
     "ltConfig"
   ], 
