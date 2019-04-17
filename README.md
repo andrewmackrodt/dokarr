@@ -77,7 +77,7 @@ that this is a **slow** operation depending on the size of your media library.
 
 ```
 ./machine/share/convert-symlinks.sh -r "config/nginx/certs"
-./machine/share/convert-symlinks.sh --path "*/_combined/posters" "config/plex/Library/Application Support/Plex Media Server/Metadata"Metadata"
+./machine/share/convert-symlinks.sh --path "*/_combined/posters" "config/plex/Library/Application Support/Plex Media Server/Metadata"
 ```
 
 ### Reverse Proxy
