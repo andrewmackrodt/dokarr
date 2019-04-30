@@ -99,6 +99,11 @@ if [[ $# == 1 ]]; then
             || echo "LAN_IP=$LAN_IP" >> .env
         exit 0
     ;;
+    link)
+        ./machine/share/convert-symlinks.sh -r "config/nginx/certs" && \
+            ./machine/share/convert-symlinks.sh --path "*/_combined/posters" "config/plex/Library/Application Support/Plex Media Server/Metadata"
+        exit $?
+    ;;
     path)
         pwd
         exit 0

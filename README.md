@@ -74,10 +74,15 @@ and POSIX symlinks a conversion process must be run to recreate symlinks once bo
 to the new OS. The `convert-symlinks` script is provided to handle this process. Note
 that this is a **slow** operation depending on the size of your media library.
 
+**Requires WSL**
 
 ```
+# manual operation
 ./machine/share/convert-symlinks.sh -r "config/nginx/certs"
 ./machine/share/convert-symlinks.sh --path "*/_combined/posters" "config/plex/Library/Application Support/Plex Media Server/Metadata"
+
+# or via dokarr script
+dokarr link
 ```
 
 ### Reverse Proxy
