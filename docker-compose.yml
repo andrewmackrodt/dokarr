@@ -415,6 +415,21 @@ services:
   # dev
   #=============================================================================
 
+  ddclient:
+    image: linuxserver/ddclient
+    container_name: ddclient
+    logging: *default-logging
+    environment:
+      # ddclient
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/London}
+      # dockergen
+      - NETWORK_ACCESS=internal
+    volumes:
+      - ./config/ddclient:/config
+    restart: unless-stopped
+
   # devdns:
   #   image: andrewmackrodt/devdns
   #   container_name: devdns
