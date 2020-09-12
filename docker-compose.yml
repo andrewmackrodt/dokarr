@@ -24,7 +24,7 @@ services:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
-      - VERSION=docker
+      - VERSION=latest
       # dockergen
       - "VIRTUAL_HOST=\
           ${HTTP_HOST:-127.0.0.1.xip.io},\
