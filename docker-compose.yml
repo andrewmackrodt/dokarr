@@ -283,6 +283,7 @@ services:
       - NETWORK_ACCESS=internal
     volumes:
       - ./config/deluge:/config
+      - ./config/pia:/gluetun:ro
       - ./data:/data
       - ./share/deluge/init:/usr/local/bin/init
       # Optional volumes, e.g. to follow symlinks
@@ -353,8 +354,10 @@ services:
       - PASSWORD=$PIA_PASSWORD
       - REGION=${PIA_REGION:-DE Berlin}
       - PROTOCOL=${PIA_PROTOCOL:-udp}
-      - ENCRYPTION=${PIA_ENCRYPTION:-normal}
-      - EXTRA_SUBNETS=172.16.0.0/12,10.0.0.0/8
+      # - FIREWALL_OUTBOUND_SUBNETS=172.16.0.0/12,10.0.0.0/8
+      - PIA_ENCRYPTION=${PIA_ENCRYPTION:-normal}
+      - PORT_FORWARDING=on
+      - PORT_FORWARDING_STATUS_FILE=/gluetun/forwarded_port
       # dockergen
       - "VIRTUAL_HOST=\
           deluge.${HTTP_HOST:-127.0.0.1.xip.io},\
@@ -365,6 +368,8 @@ services:
       # nginx-proxy-letsencrypt
       - ${LE_HOST_KEY:-NGINX_SSL_HOST}=deluge.${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
+    volumes:
+      - ./config/pia:/gluetun
     restart: unless-stopped
 
   http-proxy:
@@ -385,7 +390,7 @@ services:
   #=============================================================================
 
   portainer:
-    image: portainer/portainer
+    image: portainer/portainer-ce
     container_name: portainer
     logging: *default-logging
     environment:
@@ -412,7 +417,7 @@ services:
     restart: unless-stopped
 
   #=============================================================================
-  # dev
+  # host management
   #=============================================================================
 
   ddclient:
