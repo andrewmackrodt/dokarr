@@ -41,7 +41,7 @@ services:
       - ./config/plex:/config
       - plex_database:/databases
       - ./cache/plex:/transcode
-      - ./data:/data
+      - ./media:/media
       - ./share/databases/cont-init:/etc/cont-init.d/20-database
       - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
       # Optional volumes, e.g. to follow symlinks
@@ -50,8 +50,8 @@ services:
       - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
       - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
       - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
-      # NTFS-3G directory junction mappings
-      - ./share/.NTFS-3G:/${NTFS_DRIVE:-c}/.NTFS-3G
+      # # NTFS-3G directory junction mappings
+      # - ./share/.NTFS-3G:/mnt/${NTFS_DRIVE:-c}/.NTFS-3G:ro
     restart: unless-stopped
 
   tautulli:
@@ -105,7 +105,7 @@ services:
     volumes:
       - sonarr_database:/databases
       - ./config/sonarr:/config
-      - ./data:/data
+      - ./media:/media
       - ./share/databases/cont-init:/etc/cont-init.d/20-database
       - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
       # Optional volumes, e.g. to follow symlinks
@@ -114,8 +114,8 @@ services:
       - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
       - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
       - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
-      # NTFS-3G directory junction mappings
-      - ./share/.NTFS-3G:/${NTFS_DRIVE:-c}/.NTFS-3G
+      # # NTFS-3G directory junction mappings
+      # - ./share/.NTFS-3G:/mnt/${NTFS_DRIVE:-c}/.NTFS-3G:ro
     restart: unless-stopped
 
   radarr:
@@ -142,7 +142,7 @@ services:
     volumes:
       - radarr_database:/databases
       - ./config/radarr:/config
-      - ./data:/data
+      - ./media:/media
       - ./share/databases/cont-init:/etc/cont-init.d/20-database
       - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
       # Optional volumes, e.g. to follow symlinks
@@ -151,8 +151,8 @@ services:
       - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
       - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
       - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
-      # NTFS-3G directory junction mappings
-      - ./share/.NTFS-3G:/${NTFS_DRIVE:-c}/.NTFS-3G
+      # # NTFS-3G directory junction mappings
+      # - ./share/.NTFS-3G:/mnt/${NTFS_DRIVE:-c}/.NTFS-3G:ro
     restart: unless-stopped
 
   lidarr:
@@ -179,7 +179,7 @@ services:
     volumes:
       - lidarr_database:/databases
       - ./config/lidarr:/config
-      - ./data:/data
+      - ./media:/media
       - ./share/databases/cont-init:/etc/cont-init.d/20-database
       - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
       # Optional volumes, e.g. to follow symlinks
@@ -188,8 +188,8 @@ services:
       - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
       - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
       - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
-      # NTFS-3G directory junction mappings
-      - ./share/.NTFS-3G:/${NTFS_DRIVE:-c}/.NTFS-3G
+      # # NTFS-3G directory junction mappings
+      # - ./share/.NTFS-3G:/mnt/${NTFS_DRIVE:-c}/.NTFS-3G:ro
     restart: unless-stopped
 
   #=============================================================================
@@ -217,17 +217,17 @@ services:
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
       - ./config/jackett:/config
-      - ./data:/data
+      - ./media:/media
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/null0}
       - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/null1}
       - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
       - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
       - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
-      # NTFS-3G directory junction mappings
-      - ./share/.NTFS-3G:/${NTFS_DRIVE:-c}/.NTFS-3G
-    depends_on:
-      - http-proxy
+      # # NTFS-3G directory junction mappings
+      # - ./share/.NTFS-3G:/mnt/${NTFS_DRIVE:-c}/.NTFS-3G:ro
+    # depends_on:
+    #   - http-proxy
     restart: unless-stopped
 
   #=============================================================================
@@ -256,15 +256,15 @@ services:
     volumes:
       - ./config/nzbget:/config
       - ./share/nzbget:/usr/share/nzbget
-      - ./data:/data
+      - ./media:/media
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/null0}
       - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/null1}
       - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
       - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
       - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
-      # NTFS-3G directory junction mappings
-      - ./share/.NTFS-3G:/${NTFS_DRIVE:-c}/.NTFS-3G
+      # # NTFS-3G directory junction mappings
+      # - ./share/.NTFS-3G:/mnt/${NTFS_DRIVE:-c}/.NTFS-3G:ro
     restart: unless-stopped
 
   deluge:
@@ -284,7 +284,7 @@ services:
     volumes:
       - ./config/deluge:/config
       - ./config/pia:/gluetun:ro
-      - ./data:/data
+      - ./media:/media
       - ./share/deluge/init:/usr/local/bin/init
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/null0}
@@ -292,8 +292,8 @@ services:
       - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
       - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
       - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
-      # NTFS-3G directory junction mappings
-      - ./share/.NTFS-3G:/${NTFS_DRIVE:-c}/.NTFS-3G
+      # # NTFS-3G directory junction mappings
+      # - ./share/.NTFS-3G:/mnt/${NTFS_DRIVE:-c}/.NTFS-3G:ro
     depends_on:
       - pia
     restart: unless-stopped
@@ -352,12 +352,13 @@ services:
       # pia
       - USER=$PIA_USERNAME
       - PASSWORD=$PIA_PASSWORD
-      - REGION=${PIA_REGION:-DE Berlin}
+      - REGION=${PIA_REGION:-UK London}
       - PROTOCOL=${PIA_PROTOCOL:-udp}
       # - FIREWALL_OUTBOUND_SUBNETS=172.16.0.0/12,10.0.0.0/8
       - PIA_ENCRYPTION=${PIA_ENCRYPTION:-normal}
       - PORT_FORWARDING=on
       - PORT_FORWARDING_STATUS_FILE=/gluetun/forwarded_port
+      - HTTPPROXY=on
       # dockergen
       - "VIRTUAL_HOST=\
           deluge.${HTTP_HOST:-127.0.0.1.xip.io},\
@@ -372,18 +373,18 @@ services:
       - ./config/pia:/gluetun
     restart: unless-stopped
 
-  http-proxy:
-    image: dannydirect/tinyproxy
-    command: ANY
-    container_name: http-proxy
-    logging: *default-logging
-    network_mode: service:pia
-    environment:
-      # dockergen
-      - NETWORK_ACCESS=internal
-    depends_on:
-      - pia
-    restart: unless-stopped
+  # http-proxy:
+  #   image: dannydirect/tinyproxy
+  #   command: ANY
+  #   container_name: http-proxy
+  #   logging: *default-logging
+  #   network_mode: service:pia
+  #   environment:
+  #     # dockergen
+  #     - NETWORK_ACCESS=internal
+  #   depends_on:
+  #     - pia
+  #   restart: unless-stopped
 
   #=============================================================================
   # container management
