@@ -201,6 +201,38 @@ services:
       - prowlarr
     restart: unless-stopped
 
+  readarr:
+    image: ghcr.io/linuxserver/readarr:nightly
+    container_name: readarr
+    logging: *default-logging
+    environment:
+      # readarr
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/London}
+      # dockergen
+      - "VIRTUAL_HOST=\
+          readarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
+          ~^readarr\\.[0-9a-f:.]+\\.sslip\\.io$$"
+      - CERT_NAME=readarr.${HTTP_HOST:-127.0.0.1.sslip.io}
+      - VIRTUAL_PORT=8787
+      # nginx-proxy-letsencrypt
+      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=readarr.${HTTP_HOST:-}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
+    volumes:
+      - ./config/readarr:/config
+      - ./media:/media
+      # Optional volumes, e.g. to follow symlinks
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
+      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/null5}
+      # # NTFS-3G directory junction mappings
+      # - ./share/.NTFS-3G:/mnt/${NTFS_DRIVE:-c}/.NTFS-3G:ro
+    restart: unless-stopped
+
   overseerr:
     image: linuxserver/overseerr
     container_name: overseerr

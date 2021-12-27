@@ -11,6 +11,7 @@ Dockerized media management with letsencrypt support.
 | [![sonarr][sonarr-logo]][sonarr-link]          | **Sonarr** - smart PVR for newsgroup and bittorrent users.
 | [![radarr][radarr-logo]][radarr-link]          | **Radarr** - a fork of Sonarr to work with movies à la Couchpotato.
 | [![lidarr][lidarr-logo]][lidarr-link]          | **Lidarr** - looks and smells like Sonarr but made for music.
+| [![readarr][readarr-logo]][readarr-link]       | **Readarr** - ebook and audiobook collection manager for Usenet and BitTorrent users.
 | [![overseerr][overseerr-logo]][overseerr-link] | **Overseerr** - request management and media discovery tool.
 | [![nzbget][nzbget-logo]][nzbget-link]          | **NZBGet** - an efficient Usenet Downloader.
 | [![deluge][deluge-logo]][deluge-link]          | **Deluge** - a lightweight, Free Software, cross-platform BitTorrent client.
@@ -29,6 +30,8 @@ Dockerized media management with letsencrypt support.
 [radarr-logo]: docs/images/radarr.png
 [lidarr-link]: https://hub.docker.com/r/linuxserver/lidarr
 [lidarr-logo]: docs/images/lidarr.png
+[readarr-link]: https://hub.docker.com/r/linuxserver/readarr
+[readarr-logo]: docs/images/readarr.png
 [overseerr-link]: https://hub.docker.com/r/linuxserver/overseerr
 [overseerr-logo]: docs/images/overseerr.png
 [nzbget-link]: https://hub.docker.com/r/linuxserver/nzbget
