@@ -4,19 +4,19 @@ Dockerized media management with letsencrypt support.
 
 ### Services
 
-| - | description
-|---------------------------------------------------|----------
-| [![plex][plex-logo]][plex-link]                   | **Plex** - organize all of your personal media so you can enjoy it no matter where you are.
-| [![tautulli][tautulli-logo]][tautulli-link]       | **Tautulli** - monitoring and tracking tool for Plex Media Server.
-| [![sonarr][sonarr-logo]][sonarr-link]             | **Sonarr** - smart PVR for newsgroup and bittorrent users.
-| [![radarr][radarr-logo]][radarr-link]             | **Radarr** - a fork of Sonarr to work with movies à la Couchpotato.
-| [![lidarr][lidarr-logo]][lidarr-link]             | **Lidarr** - looks and smells like Sonarr but made for music.
-| [![jackett][jackett-logo]][jackett-link]          | **Jackett** - API Support for your favorite torrent trackers. 
-| [![nzbget][nzbget-logo]][nzbget-link]             | **NZBGet** - an efficient Usenet Downloader.
-| [![deluge][deluge-logo]][deluge-link]             | **Deluge** - a lightweight, Free Software, cross-platform BitTorrent client.
-| [![private internet access][pia-logo]][pia-link]  | **Private Internet Access** - VPN service providing an anonymous IP.
-| [![tiny-proxy][tiny-proxy-logo]][tiny-proxy-link] | **Tinyproxy** - provides an http proxy for the PIA VPN connection.
-| [![portainer][portainer-logo]][portainer-link]    | **Portainer** - simple management UI for Docker.
+| -                                              | description
+|------------------------------------------------|------------
+| [![plex][plex-logo]][plex-link]                | **Plex** - organize all of your personal media so you can enjoy it no matter where you are.
+| [![tautulli][tautulli-logo]][tautulli-link]    | **Tautulli** - monitoring and tracking tool for Plex Media Server.
+| [![sonarr][sonarr-logo]][sonarr-link]          | **Sonarr** - smart PVR for newsgroup and bittorrent users.
+| [![radarr][radarr-logo]][radarr-link]          | **Radarr** - a fork of Sonarr to work with movies à la Couchpotato.
+| [![lidarr][lidarr-logo]][lidarr-link]          | **Lidarr** - looks and smells like Sonarr but made for music.
+| [![overseerr][overseerr-logo]][overseerr-link] | **Overseerr** - request management and media discovery tool.
+| [![nzbget][nzbget-logo]][nzbget-link]          | **NZBGet** - an efficient Usenet Downloader.
+| [![deluge][deluge-logo]][deluge-link]          | **Deluge** - a lightweight, Free Software, cross-platform BitTorrent client.
+| [![prowlarr][prowlarr-logo]][prowlarr-link]    | **Prowlarr** - indexer manager/proxy for nzb and torrent.
+| [![gluetun][gluetun-logo]][gluetun-link]       | **Gluetun VPN client** - VPN client to anonyomize IP.
+| [![portainer][portainer-logo]][portainer-link] | **Portainer** - simple management UI for Docker.
 
 
 [plex-link]: https://hub.docker.com/r/linuxserver/plex
@@ -29,18 +29,18 @@ Dockerized media management with letsencrypt support.
 [radarr-logo]: docs/images/radarr.png
 [lidarr-link]: https://hub.docker.com/r/linuxserver/lidarr
 [lidarr-logo]: docs/images/lidarr.png
+[overseerr-link]: https://hub.docker.com/r/linuxserver/overseerr
+[overseerr-logo]: docs/images/overseerr.png
 [nzbget-link]: https://hub.docker.com/r/linuxserver/nzbget
 [nzbget-logo]: docs/images/nzbget.png
 [deluge-link]: https://hub.docker.com/r/linuxserver/deluge
 [deluge-logo]: docs/images/deluge.png
-[jackett-link]: https://hub.docker.com/r/linuxserver/jackett
-[jackett-logo]: docs/images/jackett.png
+[prowlarr-link]: https://hub.docker.com/r/linuxserver/prowlarr
+[prowlarr-logo]: docs/images/prowlarr.png
+[gluetun-link]: https://hub.docker.com/r/qmcgaw/gluetun
+[gluetun-logo]: docs/images/gluetun.png
 [portainer-link]: https://hub.docker.com/r/portainer/portainer
 [portainer-logo]: docs/images/portainer.png
-[pia-link]: https://hub.docker.com/r/qmcgaw/private-internet-access
-[pia-logo]: docs/images/private-internet-access.png
-[tiny-proxy-link]: https://hub.docker.com/r/dannydirect/tinyproxy
-[tiny-proxy-logo]: docs/images/tiny-proxy.png
 
 
 ### Requirements
@@ -50,6 +50,9 @@ Dockerized media management with letsencrypt support.
 \* required for secure torrent support
 
 ### Windows Requirements ††
+
+> **Windows support has not been tested since 2019**
+
 - [docker-machine](https://docs.docker.com/machine/install-machine/)
 - [VirtualBox 6](https://www.virtualbox.org/wiki/Downloads)
 - [Git for Windows](https://gitforwindows.org/) - _WSL bash is not supported_
@@ -86,8 +89,8 @@ dokarr link
 ```
 
 ### Reverse Proxy
-The compose file is configured to make all services available via [*.xip.io](http://xip.io/),
-e.g. `plex.192.168.100.99.xip.io`, the default port for the reverse proxy is `8080`,
+The compose file is configured to make all services available via [*.sslip.io](http://sslip.io/),
+e.g. `plex.192.168.100.99.sslip.io`, the default port for the reverse proxy is `8080`,
 configurable in `.env`. An additional domain may be added by setting `HTTP_HOST` in `.env`.
 
 SSL is also supported with certificates issued by [Let's Encrypt](https://letsencrypt.org/), see the section below.
@@ -95,7 +98,7 @@ SSL is also supported with certificates issued by [Let's Encrypt](https://letsen
 ### SSL
 SSL support can be added by setting three environment variables. However, it is
 **highly recommended** that you run the project once and secure the login pages
-to each service by accessing them locally via the `*.xip.io` magic domain by
+to each service by accessing them locally via the `*.sslip.io` magic domain by
 setting up authentication.
 
 Additionally, Let's Encrypt must be able to access each domain,

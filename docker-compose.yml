@@ -32,8 +32,7 @@ services:
       # dockergen
       - "VIRTUAL_HOST=\
           ${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^[0-9a-f:.]+\\.sslip\\.io$$,\
-          plex.${DEV_DNS_TLD:-dokarr}"
+          ~^[0-9a-f:.]+\\.sslip\\.io$$"
       - CERT_NAME=${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=32400
       # nginx-proxy-letsencrypt
@@ -70,8 +69,7 @@ services:
       # dockergen
       - "VIRTUAL_HOST=\
           tautulli.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^tautulli\\.[0-9a-f:.]+\\.sslip\\.io$$,\
-          tautulli.${DEV_DNS_TLD:-dokarr}"
+          ~^tautulli\\.[0-9a-f:.]+\\.sslip\\.io$$"
       - CERT_NAME=tautulli.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=8181
       # nginx-proxy-letsencrypt
@@ -100,8 +98,7 @@ services:
       # dockergen
       - "VIRTUAL_HOST=\
           sonarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^sonarr\\.[0-9a-f:.]+\\.sslip\\.io$$,\
-          sonarr.${DEV_DNS_TLD:-dokarr}"
+          ~^sonarr\\.[0-9a-f:.]+\\.sslip\\.io$$"
       - CERT_NAME=sonarr.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=8989
       # nginx-proxy-letsencrypt
@@ -122,6 +119,8 @@ services:
       - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/null5}
       # # NTFS-3G directory junction mappings
       # - ./share/.NTFS-3G:/mnt/${NTFS_DRIVE:-c}/.NTFS-3G:ro
+    depends_on:
+      - prowlarr
     restart: unless-stopped
 
   radarr:
@@ -138,8 +137,7 @@ services:
       # dockergen
       - "VIRTUAL_HOST=\
           radarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^radarr\\.[0-9a-f:.]+\\.sslip\\.io$$,\
-          radarr.${DEV_DNS_TLD:-dokarr}"
+          ~^radarr\\.[0-9a-f:.]+\\.sslip\\.io$$"
       - CERT_NAME=radarr.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=7878
       # nginx-proxy-letsencrypt
@@ -160,6 +158,8 @@ services:
       - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/null5}
       # # NTFS-3G directory junction mappings
       # - ./share/.NTFS-3G:/mnt/${NTFS_DRIVE:-c}/.NTFS-3G:ro
+    depends_on:
+      - prowlarr
     restart: unless-stopped
 
   lidarr:
@@ -176,8 +176,7 @@ services:
       # dockergen
       - "VIRTUAL_HOST=\
           lidarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^lidarr\\.[0-9a-f:.]+\\.sslip\\.io$$,\
-          lidarr.${DEV_DNS_TLD:-dokarr}"
+          ~^lidarr\\.[0-9a-f:.]+\\.sslip\\.io$$"
       - CERT_NAME=lidarr.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=8686
       # nginx-proxy-letsencrypt
@@ -198,6 +197,8 @@ services:
       - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/null5}
       # # NTFS-3G directory junction mappings
       # - ./share/.NTFS-3G:/mnt/${NTFS_DRIVE:-c}/.NTFS-3G:ro
+    depends_on:
+      - prowlarr
     restart: unless-stopped
 
   overseerr:
@@ -211,8 +212,7 @@ services:
       # dockergen
       - "VIRTUAL_HOST=\
           requests.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^requests\\.[0-9a-f:.]+\\.sslip\\.io$$,\
-          requests.${DEV_DNS_TLD:-dokarr}"
+          ~^requests\\.[0-9a-f:.]+\\.sslip\\.io$$"
       - CERT_NAME=requests.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=5055
       # nginx-proxy-letsencrypt
@@ -221,42 +221,31 @@ services:
     volumes:
       - ./config/overseerr:/config
     restart: unless-stopped
-  
+
   #=============================================================================
   # indexer middleware
   #=============================================================================
 
-  jackett:
-    image: linuxserver/jackett
-    container_name: jackett
+  prowlarr:
+    image: ghcr.io/linuxserver/prowlarr:develop
+    container_name: prowlarr
     logging: *default-logging
     environment:
-      # jackett
+      # prowlarr
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       # dockergen
       - "VIRTUAL_HOST=\
-          jackett.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^jackett\\.[0-9a-f:.]+\\.sslip\\.io$$,\
-          jackett.${DEV_DNS_TLD:-dokarr}"
-      - CERT_NAME=jackett.${HTTP_HOST:-127.0.0.1.sslip.io}
-      - VIRTUAL_PORT=9117
+          prowlarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
+          ~^prowlarr\\.[0-9a-f:.]+\\.sslip\\.io$$"
+      - CERT_NAME=prowlarr.${HTTP_HOST:-127.0.0.1.sslip.io}
+      - VIRTUAL_PORT=9696
       # nginx-proxy-letsencrypt
-      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=jackett.${HTTP_HOST:-}
+      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=prowlarr.${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
-      - ./config/jackett:/config
-      - ./media:/media
-      # Optional volumes, e.g. to follow symlinks
-      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/null0}
-      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/null1}
-      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
-      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
-      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
-      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/null5}
-      # # NTFS-3G directory junction mappings
-      # - ./share/.NTFS-3G:/mnt/${NTFS_DRIVE:-c}/.NTFS-3G:ro
+      - ./config/prowlarr:/config
     depends_on:
       - pia
     restart: unless-stopped
@@ -277,8 +266,7 @@ services:
       # dockergen
       - "VIRTUAL_HOST=\
           nzbget.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^nzbget\\.[0-9a-f:.]+\\.sslip\\.io$$,\
-          nzbget.${DEV_DNS_TLD:-dokarr}"
+          ~^nzbget\\.[0-9a-f:.]+\\.sslip\\.io$$"
       - CERT_NAME=nzbget.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=6789
       # nginx-proxy-letsencrypt
@@ -395,8 +383,7 @@ services:
       # dockergen
       - "VIRTUAL_HOST=\
           deluge.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^deluge\\.[0-9a-f:.]+\\.sslip\\.io$$,\
-          deluge.${DEV_DNS_TLD:-dokarr}"
+          ~^deluge\\.[0-9a-f:.]+\\.sslip\\.io$$"
       - CERT_NAME=deluge.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=8112
       # nginx-proxy-letsencrypt
@@ -425,8 +412,7 @@ services:
       # dockergen
       - "VIRTUAL_HOST=\
           portainer.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^portainer\\.[0-9a-f:.]+\\.sslip\\.io$$,\
-          portainer.${DEV_DNS_TLD:-dokarr}"
+          ~^portainer\\.[0-9a-f:.]+\\.sslip\\.io$$"
       - CERT_NAME=portainer.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=9000
       # nginx-proxy-letsencrypt
