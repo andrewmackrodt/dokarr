@@ -29,7 +29,7 @@ if [[ -f /gluetun/forwarded_port ]]; then
     echo "OK" >&2
     echo "Updating deluge config to use port: $LISTEN_PORT" >&2
     cp -f core.conf core.conf~
-    cat core.conf~ | perl -0777 -pe 's/"listen_ports":.+?\]/"listen_ports": [\n    '$LISTEN_PORT', \n    '$LISTEN_PORT'\n  ]/ms' > core.conf
+    cat core.conf~ | perl -0777 -pe 's/"listen_ports":.+?\]/"listen_ports": [\n        '$LISTEN_PORT',\n        '$LISTEN_PORT'\n    ]/ms' > core.conf
 else
     echo "ERR" >&2
 fi

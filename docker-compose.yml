@@ -330,7 +330,7 @@ services:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
-      - UMASK_SET=002
+      - UMASK=002
       # dockergen
       - NETWORK_ACCESS=internal
     volumes:
