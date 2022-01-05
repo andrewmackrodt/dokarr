@@ -80,6 +80,34 @@ services:
       - ./config/plex/Library/Application Support/Plex Media Server/Logs:/logs
     restart: unless-stopped
 
+  kavita:
+    image: kizaing/kavita:nightly
+    container_name: kavita
+    logging: *default-logging
+    environment:
+      # dockergen
+      - "VIRTUAL_HOST=\
+          read.${HTTP_HOST:-127.0.0.1.sslip.io},\
+          ~^read\\.[0-9a-f:.]+\\.sslip\\.io$$"
+      - CERT_NAME=read.${HTTP_HOST:-127.0.0.1.sslip.io}
+      - VIRTUAL_PORT=5000
+      # nginx-proxy-letsencrypt
+      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=read.${HTTP_HOST:-}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
+    volumes:
+      - ./config/kavita:/kavita/config
+      - ./media:/media
+      # Optional volumes, e.g. to follow symlinks
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/null4}
+      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/null5}
+      # # NTFS-3G directory junction mappings
+      # - ./share/.NTFS-3G:/mnt/${NTFS_DRIVE:-c}/.NTFS-3G:ro
+    restart: unless-stopped
+
   #=============================================================================
   # media management
   #=============================================================================
@@ -405,7 +433,7 @@ services:
       # pia
       - USER=$PIA_USERNAME
       - PASSWORD=$PIA_PASSWORD
-      - REGION=${PIA_REGION:-UK London}
+      - REGION=${PIA_REGION:-DE Berlin}
       - PROTOCOL=${PIA_PROTOCOL:-udp}
       # - FIREWALL_OUTBOUND_SUBNETS=172.16.0.0/12,10.0.0.0/8
       - PIA_ENCRYPTION=${PIA_ENCRYPTION:-normal}

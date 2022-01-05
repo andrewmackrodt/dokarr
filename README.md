@@ -13,6 +13,7 @@ Dockerized media management with letsencrypt support.
 | [![lidarr][lidarr-logo]][lidarr-link]          | **Lidarr** - looks and smells like Sonarr but made for music.
 | [![readarr][readarr-logo]][readarr-link]       | **Readarr** - ebook and audiobook collection manager for Usenet and BitTorrent users.
 | [![overseerr][overseerr-logo]][overseerr-link] | **Overseerr** - request management and media discovery tool.
+| [![kavita][kavita-logo]][kavita-link]          | **Kavita** - free and open source web based ebook, manga and comic reader.
 | [![nzbget][nzbget-logo]][nzbget-link]          | **NZBGet** - an efficient Usenet Downloader.
 | [![deluge][deluge-logo]][deluge-link]          | **Deluge** - a lightweight, Free Software, cross-platform BitTorrent client.
 | [![prowlarr][prowlarr-logo]][prowlarr-link]    | **Prowlarr** - indexer manager/proxy for nzb and torrent.
@@ -34,6 +35,8 @@ Dockerized media management with letsencrypt support.
 [readarr-logo]: docs/images/readarr.png
 [overseerr-link]: https://hub.docker.com/r/linuxserver/overseerr
 [overseerr-logo]: docs/images/overseerr.png
+[kavita-link]: https://hub.docker.com/r/kizaing/kavita
+[kavita-logo]: docs/images/kavita.png
 [nzbget-link]: https://hub.docker.com/r/linuxserver/nzbget
 [nzbget-logo]: docs/images/nzbget.png
 [deluge-link]: https://hub.docker.com/r/linuxserver/deluge
