@@ -82,6 +82,7 @@ services:
     image: kizaing/kavita:nightly
     container_name: kavita
     logging: *default-logging
+    user: ${PUID:-1000}:${PGID:-1000}
     environment:
       # dockergen
       - "VIRTUAL_HOST=\
