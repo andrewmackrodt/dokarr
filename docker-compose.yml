@@ -253,6 +253,7 @@ services:
   overseerr:
     image: linuxserver/overseerr
     container_name: overseerr
+    logging: *default-logging
     environment:
       # overseerr
       - PUID=${PUID:-1000}
@@ -369,7 +370,7 @@ services:
   #=============================================================================
 
   nginx:
-    image: jwilder/nginx-proxy
+    image: nginxproxy/nginx-proxy
     container_name: nginx
     logging: *default-logging
     ports:
@@ -386,13 +387,14 @@ services:
     restart: unless-stopped
 
   letsencrypt:
-    image: jrcs/letsencrypt-nginx-proxy-companion
+    image: nginxproxy/acme-companion
     container_name: letsencrypt
     logging: *default-logging
     volumes_from:
       - nginx
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/nginx/acme.sh:/etc/acme.sh
     depends_on:
       - nginx
     restart: unless-stopped
