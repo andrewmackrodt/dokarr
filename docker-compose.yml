@@ -115,7 +115,7 @@ services:
     logging: *default-logging
     environment:
       # sonarr
-      - DATABASE_FILES=nzbdrone logs
+      - DATABASE_FILES=sonarr logs
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
@@ -152,7 +152,7 @@ services:
     logging: *default-logging
     environment:
       # radarr
-      - DATABASE_FILES=nzbdrone logs
+      - DATABASE_FILES=radarr logs
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
@@ -226,9 +226,11 @@ services:
     logging: *default-logging
     environment:
       # readarr
+      - DATABASE_FILES=readarr logs
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
+      - XDG_CONFIG_HOME=/tmp/xdg
       # dockergen
       - "VIRTUAL_HOST=\
           readarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
@@ -239,8 +241,11 @@ services:
       - ${LE_HOST_KEY:-NGINX_SSL_HOST}=readarr.${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
+      - readarr_database:/databases
       - ./config/readarr:/config
       - ./media:/media
+      - ./share/databases/cont-init:/etc/cont-init.d/20-database
+      - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/.null/0}
       - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/.null/1}
@@ -282,9 +287,11 @@ services:
     logging: *default-logging
     environment:
       # prowlarr
+      - DATABASE_FILES=prowlarr logs
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
+      - XDG_CONFIG_HOME=/tmp/xdg
       # dockergen
       - "VIRTUAL_HOST=\
           prowlarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
@@ -295,7 +302,10 @@ services:
       - ${LE_HOST_KEY:-NGINX_SSL_HOST}=prowlarr.${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
+      - prowlarr_database:/databases
       - ./config/prowlarr:/config
+      - ./share/databases/cont-init:/etc/cont-init.d/20-database
+      - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
     depends_on:
       - pia
     restart: unless-stopped
@@ -494,3 +504,5 @@ volumes:
   sonarr_database:
   radarr_database:
   lidarr_database:
+  readarr_database:
+  prowlarr_database:

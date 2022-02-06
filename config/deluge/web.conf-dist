@@ -1,21 +1,22 @@
 {
-  "file": 1, 
-  "format": 1
+    "file": 2,
+    "format": 1
 }{
-  "port": 8112, 
-  "enabled_plugins": [], 
-  "theme": "gray", 
-  "show_sidebar": true, 
-  "sidebar_show_zero": false, 
-  "pkey": "ssl/daemon.pkey", 
-  "https": false, 
-  "sessions": {}, 
-  "base": "/", 
-  "interface": "0.0.0.0", 
-  "show_session_speed": true, 
-  "first_login": false, 
-  "cert": "ssl/daemon.cert", 
-  "session_timeout": 3600, 
-  "default_daemon": "", 
-  "sidebar_multiple_filters": false
+    "base": "/",
+    "cert": "ssl/daemon.cert",
+    "default_daemon": "",
+    "enabled_plugins": [],
+    "first_login": false,
+    "https": false,
+    "interface": "0.0.0.0",
+    "language": "",
+    "pkey": "ssl/daemon.pkey",
+    "port": 8112,
+    "session_timeout": 3600,
+    "sessions": {},
+    "show_session_speed": true,
+    "show_sidebar": true,
+    "sidebar_multiple_filters": false,
+    "sidebar_show_zero": false,
+    "theme": "gray"
 }

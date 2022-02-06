@@ -8,7 +8,7 @@
 #
 # On POSIX you can use "~" as alias for home directory (e.g. "~/downloads").
 # On Windows use absolute paths (e.g. "C:\Downloads").
-MainDir=/data/downloads/nzbget
+MainDir=/media/downloads/nzbget
 
 # Destination directory for downloaded files.
 #
@@ -225,13 +225,6 @@ Server1.Encryption=yes
 #
 # See http://nzbget.net/choosing-cipher for details.
 #
-# NOTE: One of the fastest cipher is RC4. To select it use the cipher string
-# "RC4-MD5" (if NZBGet was configured to use OpenSSL) or
-# "NONE:+VERS-TLS-ALL:+ARCFOUR-128:+RSA:+MD5:+COMP-ALL"
-# (if NZBGet was configured to use GnuTLS). Note that RC4 is considered insecure
-# by the IETF (http://tools.ietf.org/html/rfc7465), but may be sufficient for
-# the usage of NZBGet.
-#
 # NOTE: You may get a TLS handshake error if the news server does
 # not support the chosen cipher. You can also get an error "Could not
 # select cipher for TLS" if the cipher string is not valid.
@@ -404,11 +397,13 @@ SecureKey=
 
 # IP-addresses allowed to connect without authorization.
 #
-# Comma separated list of privileged IPs for easy access to NZBGet
-# built-in web-server (web-interface and RPC). The connected clients
-# have full unrestricted access.
+# List of privileged IPs for easy access to NZBGet built-in web-server
+# (web-interface and RPC). The connected clients have full unrestricted access.
 #
-# Example: 127.0.0.1,192.168.178.2.
+# Separate entries with commas or semicolons. Use wildcard characters
+# * and ? for pattern matching.
+#
+# Example: 127.0.0.1, 192.168.178.*
 #
 # NOTE: Do not use this option if the program works behind another
 # web-server because all requests will have the address of this server.
@@ -454,12 +449,18 @@ UpdateCheck=none
 # current user id.
 DaemonUsername=root
 
-# Specify default umask (affects file permissions) for newly created
-# files, POSIX only (000-1000).
+# Specify default umask, POSIX only (000-1000).
+#
+# UMask determines the settings of a mask that controls how file permissions
+# are set for newly created files and directories. Please note that UMask
+# doesn't set file permissions directly, it merely filters out certain
+# permissions. It also has very different effect from command "chmod", which
+# you shouldn't confuse UMask with. Please read
+# http://en.wikipedia.org/wiki/Umask for details.
 #
 # The value should be written in octal form (the same as for "umask" shell
 # command).
-# Empty value or value "1000" disable the setting of umask-mode; current
+# Empty value or value "1000" disables the setting of umask-mode; current
 # umask-mode (set via shell) is used in this case.
 UMask=002
 
@@ -508,7 +509,7 @@ Category1.Aliases=
 
 Category2.Name=Series
 Category3.Name=Music
-Category4.Name=Software
+Category4.Name=Books
 
 
 ##############################################################################
