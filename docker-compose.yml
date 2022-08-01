@@ -307,7 +307,7 @@ services:
       - ./share/databases/cont-init:/etc/cont-init.d/20-database
       - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
     depends_on:
-      - pia
+      - vpn
     restart: unless-stopped
 
   #=============================================================================
@@ -346,10 +346,10 @@ services:
     restart: unless-stopped
 
   deluge:
-    image: linuxserver/deluge
+    image: linuxserver/deluge:stable
     container_name: deluge
     logging: *default-logging
-    network_mode: service:pia
+    network_mode: service:vpn
     entrypoint: /usr/local/bin/init
     environment:
       # deluge
@@ -361,7 +361,7 @@ services:
       - NETWORK_ACCESS=internal
     volumes:
       - ./config/deluge:/config
-      - ./config/pia:/gluetun:ro
+      - ./config/vpn:/gluetun:ro
       - ./media:/media
       - ./share/deluge/init:/usr/local/bin/init
       # Optional volumes, e.g. to follow symlinks
@@ -372,7 +372,7 @@ services:
       - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/.null/4}
       - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/.null/5}
     depends_on:
-      - pia
+      - vpn
     restart: unless-stopped
 
   #=============================================================================
@@ -413,9 +413,9 @@ services:
   # privacy
   #=============================================================================
 
-  pia:
+  vpn:
     image: qmcgaw/gluetun
-    container_name: pia
+    container_name: vpn
     logging: *default-logging
     cap_add:
       - NET_ADMIN
@@ -427,15 +427,15 @@ services:
       # http-proxy
       - 8888:8888
     environment:
-      # pia
-      - USER=$PIA_USERNAME
-      - PASSWORD=$PIA_PASSWORD
-      - REGION=${PIA_REGION:-DE Berlin}
-      - PROTOCOL=${PIA_PROTOCOL:-udp}
-      # - FIREWALL_OUTBOUND_SUBNETS=172.16.0.0/12,10.0.0.0/8
-      - PIA_ENCRYPTION=${PIA_ENCRYPTION:-normal}
-      - PORT_FORWARDING=on
-      - PORT_FORWARDING_STATUS_FILE=/gluetun/forwarded_port
+      # mullvad
+      - VPNSP=mullvad
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      - WIREGUARD_ADDRESS=${WIREGUARD_ADDRESS:-10.64.222.21/32}
+      - CITY=${MULLVAD_CITY:-London}
+      - FIREWALL_VPN_INPUT_PORTS=${FIREWALL_VPN_INPUT_PORTS}
+      # - DOT=off
+      # - DNS_PLAINTEXT_ADDRESS=193.138.218.74
       - HTTPPROXY=on
       # dockergen
       - "VIRTUAL_HOST=\
@@ -447,7 +447,7 @@ services:
       - ${LE_HOST_KEY:-NGINX_SSL_HOST}=deluge.${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
-      - ./config/pia:/gluetun
+      - ./config/vpn:/gluetun
     restart: unless-stopped
 
   #=============================================================================
