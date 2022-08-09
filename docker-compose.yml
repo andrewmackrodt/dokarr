@@ -346,7 +346,7 @@ services:
     restart: unless-stopped
 
   deluge:
-    image: linuxserver/deluge:stable
+    image: linuxserver/deluge
     container_name: deluge
     logging: *default-logging
     network_mode: service:vpn
