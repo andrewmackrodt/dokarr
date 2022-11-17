@@ -18,6 +18,8 @@ services:
     container_name: plex
     logging: *default-logging
     runtime: nvidia
+    labels:
+      - autoheal=true
     environment:
       # plex
       - DATABASE_FILES=com.plexapp.dlna com.plexapp.plugins.library.blobs com.plexapp.plugins.library
@@ -54,6 +56,15 @@ services:
       - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/.null/3}
       - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/.null/4}
       - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/.null/5}
+    healthcheck:
+        test:
+          - CMD
+          - /bin/bash
+          - -c
+          - curl -fsSL -m5 http://127.0.0.1:32400/web/index.html >/dev/null && ( [[ ! -a /dev/nvidia0 ]] || nvidia-smi >/dev/null )
+        interval: 10s
+        timeout: 8s
+        retries: 3
     restart: unless-stopped
 
   tautulli:
@@ -351,6 +362,8 @@ services:
     logging: *default-logging
     network_mode: service:vpn
     entrypoint: /usr/local/bin/init
+    labels:
+      - autoheal=true
     environment:
       # deluge
       - PUID=${PUID:-1000}
@@ -371,6 +384,15 @@ services:
       - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/.null/3}
       - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/.null/4}
       - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/.null/5}
+    healthcheck:
+        test:
+          - CMD
+          - /bin/bash
+          - -c
+          - curl -fsSL -m5 http://127.0.0.1:8112
+        interval: 10s
+        timeout: 8s
+        retries: 3
     depends_on:
       - vpn
     restart: unless-stopped
@@ -453,6 +475,18 @@ services:
   #=============================================================================
   # container management
   #=============================================================================
+
+  autoheal:
+    image: willfarrell/autoheal
+    container_name: autoheal
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=autoheal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
 
   portainer:
     image: portainer/portainer-ce
