@@ -1,6 +1,4 @@
 ---
-version: "3.9"
-
 x-logging:
   &default-logging
   options:
@@ -17,13 +15,11 @@ services:
     image: linuxserver/plex
     container_name: plex
     logging: *default-logging
-    runtime: nvidia
+    runtime: ${PLEX_RUNTIME:-runc}
     labels:
       - autoheal=true
     environment:
       # plex
-      - DATABASE_FILES=com.plexapp.dlna com.plexapp.plugins.library.blobs com.plexapp.plugins.library
-      - DATABASE_PATH=/config/Library/Application Support/Plex Media Server/Plug-in Support/Databases
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
@@ -31,24 +27,21 @@ services:
       # nvidia
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,video,utility
-      # dockergen
+      # nginx-proxy
       - "VIRTUAL_HOST=\
           ${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^[0-9a-f:.]+\\.sslip\\.io$$"
+          ~^[0-9a-f:.-]+\\.sslip\\.io$$"
       - CERT_NAME=${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=32400
-      # nginx-proxy-letsencrypt
+      # acme-companion
       - ${LE_HOST_KEY:-NGINX_SSL_HOST}=${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     ports:
       - ${PLEX_PORT:-32400}:32400
     volumes:
-      - ./config/plex:/config
-      - plex_database:/databases
       - ./cache/plex:/transcode
+      - ./config/plex:/config
       - ./media:/media
-      - ./share/databases/cont-init:/etc/cont-init.d/20-database
-      - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/.null/0}
       - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/.null/1}
@@ -75,18 +68,18 @@ services:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
-      # dockergen
+      # nginx-proxy
       - "VIRTUAL_HOST=\
           tautulli.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^tautulli\\.[0-9a-f:.]+\\.sslip\\.io$$"
+          ~^tautulli\\.[0-9a-f:.-]+\\.sslip\\.io$$"
       - CERT_NAME=tautulli.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=8181
-      # nginx-proxy-letsencrypt
+      # acme-companion
       - ${LE_HOST_KEY:-NGINX_SSL_HOST}=tautulli.${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
-      - ./config/tautulli:/config
       - ./config/plex/Library/Application Support/Plex Media Server/Logs:/logs
+      - ./config/tautulli:/config
     restart: unless-stopped
 
   kavita:
@@ -95,13 +88,13 @@ services:
     logging: *default-logging
     user: ${PUID:-1000}:${PGID:-1000}
     environment:
-      # dockergen
+      # nginx-proxy
       - "VIRTUAL_HOST=\
           read.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^read\\.[0-9a-f:.]+\\.sslip\\.io$$"
+          ~^read\\.[0-9a-f:.-]+\\.sslip\\.io$$"
       - CERT_NAME=read.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=5000
-      # nginx-proxy-letsencrypt
+      # acme-companion
       - ${LE_HOST_KEY:-NGINX_SSL_HOST}=read.${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
@@ -126,26 +119,22 @@ services:
     logging: *default-logging
     environment:
       # sonarr
-      - DATABASE_FILES=sonarr logs
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - XDG_CONFIG_HOME=/tmp/xdg
-      # dockergen
+      # nginx-proxy
       - "VIRTUAL_HOST=\
           sonarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^sonarr\\.[0-9a-f:.]+\\.sslip\\.io$$"
+          ~^sonarr\\.[0-9a-f:.-]+\\.sslip\\.io$$"
       - CERT_NAME=sonarr.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=8989
-      # nginx-proxy-letsencrypt
+      # acme-companion
       - ${LE_HOST_KEY:-NGINX_SSL_HOST}=sonarr.${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
-      - sonarr_database:/databases
       - ./config/sonarr:/config
       - ./media:/media
-      - ./share/databases/cont-init:/etc/cont-init.d/20-database
-      - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/.null/0}
       - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/.null/1}
@@ -163,26 +152,22 @@ services:
     logging: *default-logging
     environment:
       # radarr
-      - DATABASE_FILES=radarr logs
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - XDG_CONFIG_HOME=/tmp/xdg
-      # dockergen
+      # nginx-proxy
       - "VIRTUAL_HOST=\
           radarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^radarr\\.[0-9a-f:.]+\\.sslip\\.io$$"
+          ~^radarr\\.[0-9a-f:.-]+\\.sslip\\.io$$"
       - CERT_NAME=radarr.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=7878
-      # nginx-proxy-letsencrypt
+      # acme-companion
       - ${LE_HOST_KEY:-NGINX_SSL_HOST}=radarr.${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
-      - radarr_database:/databases
       - ./config/radarr:/config
       - ./media:/media
-      - ./share/databases/cont-init:/etc/cont-init.d/20-database
-      - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/.null/0}
       - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/.null/1}
@@ -200,26 +185,22 @@ services:
     logging: *default-logging
     environment:
       # lidarr
-      - DATABASE_FILES=lidarr logs
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - XDG_CONFIG_HOME=/tmp/xdg
-      # dockergen
+      # nginx-proxy
       - "VIRTUAL_HOST=\
           lidarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^lidarr\\.[0-9a-f:.]+\\.sslip\\.io$$"
+          ~^lidarr\\.[0-9a-f:.-]+\\.sslip\\.io$$"
       - CERT_NAME=lidarr.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=8686
-      # nginx-proxy-letsencrypt
+      # acme-companion
       - ${LE_HOST_KEY:-NGINX_SSL_HOST}=lidarr.${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
-      - lidarr_database:/databases
       - ./config/lidarr:/config
       - ./media:/media
-      - ./share/databases/cont-init:/etc/cont-init.d/20-database
-      - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/.null/0}
       - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/.null/1}
@@ -237,26 +218,22 @@ services:
     logging: *default-logging
     environment:
       # readarr
-      - DATABASE_FILES=readarr logs
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - XDG_CONFIG_HOME=/tmp/xdg
-      # dockergen
+      # nginx-proxy
       - "VIRTUAL_HOST=\
           readarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^readarr\\.[0-9a-f:.]+\\.sslip\\.io$$"
+          ~^readarr\\.[0-9a-f:.-]+\\.sslip\\.io$$"
       - CERT_NAME=readarr.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=8787
-      # nginx-proxy-letsencrypt
+      # acme-companion
       - ${LE_HOST_KEY:-NGINX_SSL_HOST}=readarr.${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
-      - readarr_database:/databases
       - ./config/readarr:/config
       - ./media:/media
-      - ./share/databases/cont-init:/etc/cont-init.d/20-database
-      - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/.null/0}
       - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/.null/1}
@@ -275,13 +252,13 @@ services:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
-      # dockergen
+      # nginx-proxy
       - "VIRTUAL_HOST=\
           requests.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^requests\\.[0-9a-f:.]+\\.sslip\\.io$$"
+          ~^requests\\.[0-9a-f:.-]+\\.sslip\\.io$$"
       - CERT_NAME=requests.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=5055
-      # nginx-proxy-letsencrypt
+      # acme-companion
       - ${LE_HOST_KEY:-NGINX_SSL_HOST}=requests.${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
@@ -298,25 +275,21 @@ services:
     logging: *default-logging
     environment:
       # prowlarr
-      - DATABASE_FILES=prowlarr logs
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - XDG_CONFIG_HOME=/tmp/xdg
-      # dockergen
+      # nginx-proxy
       - "VIRTUAL_HOST=\
           prowlarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^prowlarr\\.[0-9a-f:.]+\\.sslip\\.io$$"
+          ~^prowlarr\\.[0-9a-f:.-]+\\.sslip\\.io$$"
       - CERT_NAME=prowlarr.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=9696
-      # nginx-proxy-letsencrypt
+      # acme-companion
       - ${LE_HOST_KEY:-NGINX_SSL_HOST}=prowlarr.${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
-      - prowlarr_database:/databases
       - ./config/prowlarr:/config
-      - ./share/databases/cont-init:/etc/cont-init.d/20-database
-      - ./share/databases/cont-finish:/etc/cont-finish.d/20-database
     depends_on:
       - vpn
     restart: unless-stopped
@@ -334,18 +307,17 @@ services:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
-      # dockergen
+      # nginx-proxy
       - "VIRTUAL_HOST=\
           nzbget.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^nzbget\\.[0-9a-f:.]+\\.sslip\\.io$$"
+          ~^nzbget\\.[0-9a-f:.-]+\\.sslip\\.io$$"
       - CERT_NAME=nzbget.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=6789
-      # nginx-proxy-letsencrypt
+      # acme-companion
       - ${LE_HOST_KEY:-NGINX_SSL_HOST}=nzbget.${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
       - ./config/nzbget:/config
-      - ./share/nzbget:/usr/share/nzbget
       - ./media:/media
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/.null/0}
@@ -370,7 +342,9 @@ services:
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - UMASK=002
-      # dockergen
+      # vpn
+      - FIREWALL_VPN_INPUT_PORTS=${FIREWALL_VPN_INPUT_PORTS}
+      # nginx-proxy
       - NETWORK_ACCESS=internal
     volumes:
       - ./config/deluge:/config
@@ -443,29 +417,27 @@ services:
       - NET_ADMIN
     devices:
       - /dev/net/tun
+    expose:
+      - 8112
     ports:
-      # deluge
-      - 8112:8112
       # http-proxy
       - 8888:8888
     environment:
       # mullvad
-      - VPNSP=mullvad
-      - VPN_TYPE=wireguard
-      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
-      - WIREGUARD_ADDRESS=${WIREGUARD_ADDRESS:-10.64.222.21/32}
       - CITY=${MULLVAD_CITY:-London}
       - FIREWALL_VPN_INPUT_PORTS=${FIREWALL_VPN_INPUT_PORTS}
-      # - DOT=off
-      # - DNS_PLAINTEXT_ADDRESS=193.138.218.74
       - HTTPPROXY=on
-      # dockergen
+      - VPN_TYPE=wireguard
+      - VPNSP=mullvad
+      - WIREGUARD_ADDRESS=${WIREGUARD_ADDRESS:-10.64.222.21/32}
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      # nginx-proxy
       - "VIRTUAL_HOST=\
           deluge.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^deluge\\.[0-9a-f:.]+\\.sslip\\.io$$"
+          ~^deluge\\.[0-9a-f:.-]+\\.sslip\\.io$$"
       - CERT_NAME=deluge.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=8112
-      # nginx-proxy-letsencrypt
+      # acme-companion
       - ${LE_HOST_KEY:-NGINX_SSL_HOST}=deluge.${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
@@ -481,7 +453,7 @@ services:
     container_name: autoheal
     logging: *default-logging
     security_opt:
-      - no-new-privileges:true
+      - no-new-privileges
     environment:
       - AUTOHEAL_CONTAINER_LABEL=autoheal
     volumes:
@@ -489,24 +461,22 @@ services:
     restart: unless-stopped
 
   portainer:
-    image: portainer/portainer-ce
+    image: ${PORTAINER_IMAGE:-portainer/portainer-ce}
     container_name: portainer
     logging: *default-logging
     environment:
       # portainer
-      - DATABASE_FILES=portainer
-      - DATABASE_PATH=/data
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - VERSION=docker
-      # dockergen
+      # nginx-proxy
       - "VIRTUAL_HOST=\
           portainer.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^portainer\\.[0-9a-f:.]+\\.sslip\\.io$$"
+          ~^portainer\\.[0-9a-f:.-]+\\.sslip\\.io$$"
       - CERT_NAME=portainer.${HTTP_HOST:-127.0.0.1.sslip.io}
       - VIRTUAL_PORT=9000
-      # nginx-proxy-letsencrypt
+      # acme-companion
       - ${LE_HOST_KEY:-NGINX_SSL_HOST}=portainer.${HTTP_HOST:-}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
@@ -527,16 +497,8 @@ services:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
-      # dockergen
+      # nginx-proxy
       - NETWORK_ACCESS=internal
     volumes:
       - ./config/ddclient:/config
     restart: unless-stopped
-
-volumes:
-  plex_database:
-  sonarr_database:
-  radarr_database:
-  lidarr_database:
-  readarr_database:
-  prowlarr_database:

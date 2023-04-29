@@ -1,0 +1,5 @@
+*
+!.gitignore
+!deluge/
+!nginx/
+!nzbget/

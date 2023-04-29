@@ -1,159 +1,97 @@
-# dockarr
+# dokarr
 
-Dockerized media management with letsencrypt support.
+Docker Compose Media Server stack containing the popular \*arr applications with
+optional support for Let's Encrypt.
 
-### Services
+**Includes:**
 
-| -                                              | description
-|------------------------------------------------|------------
-| [![plex][plex-logo]][plex-link]                | **Plex** - organize all of your personal media so you can enjoy it no matter where you are.
-| [![tautulli][tautulli-logo]][tautulli-link]    | **Tautulli** - monitoring and tracking tool for Plex Media Server.
-| [![sonarr][sonarr-logo]][sonarr-link]          | **Sonarr** - smart PVR for newsgroup and bittorrent users.
-| [![radarr][radarr-logo]][radarr-link]          | **Radarr** - a fork of Sonarr to work with movies à la Couchpotato.
-| [![lidarr][lidarr-logo]][lidarr-link]          | **Lidarr** - looks and smells like Sonarr but made for music.
-| [![readarr][readarr-logo]][readarr-link]       | **Readarr** - ebook and audiobook collection manager for Usenet and BitTorrent users.
-| [![overseerr][overseerr-logo]][overseerr-link] | **Overseerr** - request management and media discovery tool.
-| [![kavita][kavita-logo]][kavita-link]          | **Kavita** - free and open source web based ebook, manga and comic reader.
-| [![nzbget][nzbget-logo]][nzbget-link]          | **NZBGet** - an efficient Usenet Downloader.
-| [![deluge][deluge-logo]][deluge-link]          | **Deluge** - a lightweight, Free Software, cross-platform BitTorrent client.
-| [![prowlarr][prowlarr-logo]][prowlarr-link]    | **Prowlarr** - indexer manager/proxy for nzb and torrent.
-| [![gluetun][gluetun-logo]][gluetun-link]       | **Gluetun VPN client** - VPN client to anonyomize IP.
-| [![portainer][portainer-logo]][portainer-link] | **Portainer** - simple management UI for Docker.
+ - <img alt="deluge" src="docs/images/deluge.png" width="12px"></img> **[Deluge][deluge]** a lightweight BitTorrent client with web based management interface
+ - <img alt="gluetun" src="docs/images/gluetun.png" width="12px"></img> **[Gluetun][gluetun]** VPN client to anonymize IP
+ - <img alt="kavita" src="docs/images/kavita.png" width="12px"></img> **[Kavita][kavita]** free and open source web based ebook, manga and comic reader
+ - <img alt="lidarr" src="docs/images/lidarr.png" width="12px"></img> **[Lidarr][lidarr]** looks and smells like Sonarr but made for music
+ - <img alt="nzbget" src="docs/images/nzbget.png" width="12px"></img> **[NZBGet][nzbget]** an efficient Usenet Downloader
+ - <img alt="overseerr" src="docs/images/overseerr.png" width="12px"></img> **[Overseerr][overseerr]** request management and media discovery tool
+ - <img alt="plex" src="docs/images/plex.png" width="12px"></img> **[Plex][plex]** organize all of your personal media so you can enjoy it no matter where you are
+ - <img alt="portainer" src="docs/images/portainer.png" width="12px"></img> **[Portainer][portainer]** simple management UI for Docker
+ - <img alt="prowlarr" src="docs/images/prowlarr.png" width="12px"></img> **[Prowlarr][prowlarr]** indexer manager/proxy for nzb and torrent
+ - <img alt="radarr" src="docs/images/radarr.png" width="12px"></img> **[Radarr][radarr]** a fork of Sonarr to work with movies à la Couchpotato
+ - <img alt="readarr" src="docs/images/readarr.png" width="12px"></img> **[Readarr][readarr]** ebook and audiobook collection manager for Usenet and BitTorrent users
+ - <img alt="sonarr" src="docs/images/sonarr.png" width="12px"></img> **[Sonarr][sonarr]** smart PVR for newsgroup and bittorrent users
+ - <img alt="tautulli" src="docs/images/tautulli.png" width="12px"></img> **[Tautulli][tautulli]** monitoring and tracking tool for Plex Media Server
 
+[plex]: https://hub.docker.com/r/linuxserver/plex
+[tautulli]: https://hub.docker.com/r/linuxserver/tautulli
+[sonarr]: https://hub.docker.com/r/linuxserver/sonarr
+[radarr]: https://hub.docker.com/r/linuxserver/radarr
+[lidarr]: https://hub.docker.com/r/linuxserver/lidarr
+[readarr]: https://hub.docker.com/r/linuxserver/readarr
+[overseerr]: https://hub.docker.com/r/linuxserver/overseerr
+[kavita]: https://hub.docker.com/r/kizaing/kavita
+[nzbget]: https://hub.docker.com/r/linuxserver/nzbget
+[deluge]: https://hub.docker.com/r/linuxserver/deluge
+[prowlarr]: https://hub.docker.com/r/linuxserver/prowlarr
+[gluetun]: https://hub.docker.com/r/qmcgaw/gluetun
+[portainer]: https://hub.docker.com/r/portainer/portainer
 
-[plex-link]: https://hub.docker.com/r/linuxserver/plex
-[plex-logo]: docs/images/plex.png
-[tautulli-link]: https://hub.docker.com/r/linuxserver/tautulli
-[tautulli-logo]: docs/images/tautulli.png
-[sonarr-link]: https://hub.docker.com/r/linuxserver/sonarr
-[sonarr-logo]: docs/images/sonarr.png
-[radarr-link]: https://hub.docker.com/r/linuxserver/radarr
-[radarr-logo]: docs/images/radarr.png
-[lidarr-link]: https://hub.docker.com/r/linuxserver/lidarr
-[lidarr-logo]: docs/images/lidarr.png
-[readarr-link]: https://hub.docker.com/r/linuxserver/readarr
-[readarr-logo]: docs/images/readarr.png
-[overseerr-link]: https://hub.docker.com/r/linuxserver/overseerr
-[overseerr-logo]: docs/images/overseerr.png
-[kavita-link]: https://hub.docker.com/r/kizaing/kavita
-[kavita-logo]: docs/images/kavita.png
-[nzbget-link]: https://hub.docker.com/r/linuxserver/nzbget
-[nzbget-logo]: docs/images/nzbget.png
-[deluge-link]: https://hub.docker.com/r/linuxserver/deluge
-[deluge-logo]: docs/images/deluge.png
-[prowlarr-link]: https://hub.docker.com/r/linuxserver/prowlarr
-[prowlarr-logo]: docs/images/prowlarr.png
-[gluetun-link]: https://hub.docker.com/r/qmcgaw/gluetun
-[gluetun-logo]: docs/images/gluetun.png
-[portainer-link]: https://hub.docker.com/r/portainer/portainer
-[portainer-logo]: docs/images/portainer.png
+## Requirements
 
+- 🐧 Linux distribution capable of running Docker
+- 🐳 [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/other/#on-linux)
+- 🕵🏼 [Mullvad VPN](https://mullvad.net/) (required for secure torrent support)
 
-### Requirements
-- [docker-compose](https://docs.docker.com/compose/install/#install-using-pip) †
-- [Private Internet Access](https://www.privateinternetaccess.com/) account (non-free) *
-
-\* required for secure torrent support
-
-### Windows Requirements ††
-
-> **Windows support has not been tested since 2019**
-
-- [docker-machine](https://docs.docker.com/machine/install-machine/)
-- [VirtualBox 6](https://www.virtualbox.org/wiki/Downloads)
-- [Git for Windows](https://gitforwindows.org/) - _WSL bash is not supported_
-
-Project path must be shared as `\\?\dokarr` to env.CIFS_USERNAME with write access
-
-**TODO**: document creating a CIFS share and adding firewall rules. PRs welcome.<br>
-
-_Windows users can add `machine/share/DockerMachineStartupTask.cmd` to Task Scheduler
-to start docker-machine on system boot._
-
-† `docker-compose` is provided in the VM but it's recommended to use a native install<br>
-
-†† Will also work for Mac OS and Linux users but there's no reason to use a CIFS mount
-   unless using VirtualBox.
-
-### Windows & Linux Interoperability
-
-Dokarr is designed to work across operating systems if using a disk formatted as NTFS.
-Due to differences in symlink handling between CIFS [mfsymlinks](https://wiki.samba.org/index.php/UNIX_Extensions#Minshall.2BFrench_symlinks) 
-and POSIX symlinks a conversion process must be run to recreate symlinks once booted
-to the new OS. The `convert-symlinks` script is provided to handle this process. Note
-that this is a **slow** operation depending on the size of your media library.
-
-**Requires WSL**
-
-```
-# manual operation
-./machine/share/convert-symlinks.sh -r "config/nginx/certs"
-./machine/share/convert-symlinks.sh --path "*/_combined/posters" "config/plex/Library/Application Support/Plex Media Server/Metadata"
-
-# or via dokarr script
-dokarr link
-```
+## Configuration
 
 ### Reverse Proxy
-The compose file is configured to make all services available via [*.sslip.io](http://sslip.io/),
-e.g. `plex.192.168.100.99.sslip.io`, the default port for the reverse proxy is `8080`,
-configurable in `.env`. An additional domain may be added by setting `HTTP_HOST` in `.env`.
 
-SSL is also supported with certificates issued by [Let's Encrypt](https://letsencrypt.org/), see the section below.
+The compose file is configured to make all services available via [*.sslip.io](http://sslip.io/),
+e.g. `portainer.192-168-100-99.sslip.io`. The default port for the reverse proxy
+is `8080` and can be configured by editing `.env`. An additional domain may be
+specified by setting `HTTP_HOST` in `.env`.
+
+SSL is also supported with certificates issued by [Let's Encrypt](https://letsencrypt.org/),
+see the section below.
 
 ### SSL
+
 SSL support can be added by setting three environment variables. However, it is
 **highly recommended** that you run the project once and secure the login pages
 to each service by accessing them locally via the `*.sslip.io` magic domain by
 setting up authentication.
 
-Additionally, Let's Encrypt must be able to access each domain,
-e.g. `sonarr.${env.HTTP_HOST}`, make sure port forwarding is correctly configured
+Additionally, Let's Encrypt must be able to access each domain, e.g.
+`portainer.${env.HTTP_HOST}`, make sure port forwarding is correctly configured
 on your router, `env.HTTP_PORT` is allowed through your firewall and your domain
-is correctly configured to point to your WAN address. This should be tested before
-proceeding.
+is correctly configured to point to your WAN address. This should be tested
+before proceeding.
 
-Note: HSTS is enabled, once SSL support is enabled `${env.HTTP_HOST)` is only
-accessible via SSL.
+> ⚠️ HSTS will force SSL to be required when accessing `${env.HTTP_HOST)`.
 
-Once the above is done modify these `.env` variables:
-- LE_HOST_KEY=LETSENCRYPT_HOST
-- HTTP_HOST=yourdomain.com
-- LETSENCRYPT_EMAIL=you@yourdomain.com
+To enable SSL, set the below `.env` variables:
 
-Finally it's recommended to bring up the `nginx` and `letsencrypt` containers
-before any others if certificates have not previously been generated. This will
-minimize any validation errors due to the way [letsencrypt-nginx-proxy-companion](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion)
-interacts with [nginx-proxy](https://github.com/jwilder/nginx-proxy).
+```dotenv
+# the top-level domain for the media server
+HTTP_HOST=yourdomain.com
 
-```bash
-docker-compose up -d nginx letsencrypt
-sleep 10
-docker-compose up -d
+# value must be exactly LETSENCRYPT_HOST
+LE_HOST_KEY=LETSENCRYPT_HOST
+
+# e-mail address to receive certificate expiry notifications to
+LETSENCRYPT_EMAIL=you@yourdomain.com
 ```
 
-### Quickstart
-```bash
-# add bin to PATH to make the dokarr cli available
-PATH=$PATH/bin:$PATH
+Finally, it's recommended to bring up the `nginx` and `letsencrypt` containers
+before any others if certificates have not previously been generated. This will
+minimize any validation errors when starting other services.
 
-# copy .env-dist to .env
-cp .env-dist .env
+```sh
+docker-compose up nginx letsencrypt
+```
 
-# set PIA_USERNAME and PIA_PASSWORD and additionally CIFS_USERNAME, CIFS_PASSWORD
-# if using a CIFS mount, e.g. Windows users. additional settings are in the .env
-# file, tweak them to your liking
-vi .env
+### Plex NVIDIA hardware transcoding
 
-# create dokarr docker-machine - VirtualBox users only
-dokarr create:vm
+Ensure the [NVIDIA Container Runtime](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker)
+is installed and functioning correctly and set `PLEX_RUNTIME` in `.env`:
 
-# source docker-machine environment - VirtualBox users only
-eval $(dokarr env)
-
-# start docker containers
-dokarr -D
-
-# stop docker containers
-dokarr stop
+```dotenv
+PLEX_RUNTIME=nvidia
 ```
