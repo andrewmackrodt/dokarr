@@ -57,6 +57,7 @@ services:
   tautulli:
     image: linuxserver/tautulli
     container_name: tautulli
+    logging: *default-logging
     labels:
       - traefik.enable=true
       - traefik.http.routers.tautulli.rule=HostRegexp(`tautulli.${HTTP_HOST:-127.0.0.1.sslip.io}`, `tautulli.{subdomain:[0-9a-f:.-]+}.sslip.io`)

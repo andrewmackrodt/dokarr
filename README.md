@@ -1,37 +1,37 @@
 # dokarr
 
-Docker Compose Media Server stack containing the popular \*arr applications with
-optional support for Let's Encrypt.
+Media Server stack containing the popular \*arr applications with support for
+Let's Encrypt.
 
 **Includes:**
 
- - <img alt="deluge" src="docs/images/deluge.png" width="12px"></img> **[Deluge][deluge]** a lightweight BitTorrent client with web based management interface
- - <img alt="gluetun" src="docs/images/gluetun.png" width="12px"></img> **[Gluetun][gluetun]** VPN client to anonymize IP
- - <img alt="kavita" src="docs/images/kavita.png" width="12px"></img> **[Kavita][kavita]** free and open source web based ebook, manga and comic reader
- - <img alt="lidarr" src="docs/images/lidarr.png" width="12px"></img> **[Lidarr][lidarr]** looks and smells like Sonarr but made for music
- - <img alt="nzbget" src="docs/images/nzbget.png" width="12px"></img> **[NZBGet][nzbget]** an efficient Usenet Downloader
- - <img alt="overseerr" src="docs/images/overseerr.png" width="12px"></img> **[Overseerr][overseerr]** request management and media discovery tool
- - <img alt="plex" src="docs/images/plex.png" width="12px"></img> **[Plex][plex]** organize all of your personal media so you can enjoy it no matter where you are
- - <img alt="portainer" src="docs/images/portainer.png" width="12px"></img> **[Portainer][portainer]** simple management UI for Docker
- - <img alt="prowlarr" src="docs/images/prowlarr.png" width="12px"></img> **[Prowlarr][prowlarr]** indexer manager/proxy for nzb and torrent
- - <img alt="radarr" src="docs/images/radarr.png" width="12px"></img> **[Radarr][radarr]** a fork of Sonarr to work with movies à la Couchpotato
- - <img alt="readarr" src="docs/images/readarr.png" width="12px"></img> **[Readarr][readarr]** ebook and audiobook collection manager for Usenet and BitTorrent users
- - <img alt="sonarr" src="docs/images/sonarr.png" width="12px"></img> **[Sonarr][sonarr]** smart PVR for newsgroup and bittorrent users
- - <img alt="tautulli" src="docs/images/tautulli.png" width="12px"></img> **[Tautulli][tautulli]** monitoring and tracking tool for Plex Media Server
+- <img alt="deluge" src="docs/images/deluge.png" width="12px"></img> **[Deluge][deluge]** a lightweight BitTorrent client with web based management interface
+- <img alt="gluetun" src="docs/images/gluetun.png" width="12px"></img> **[Gluetun][gluetun]** VPN client to anonymize IP
+- <img alt="kavita" src="docs/images/kavita.png" width="12px"></img> **[Kavita][kavita]** free and open source web based ebook, manga and comic reader
+- <img alt="lidarr" src="docs/images/lidarr.png" width="12px"></img> **[Lidarr][lidarr]** looks and smells like Sonarr but made for music
+- <img alt="nzbget" src="docs/images/nzbget.png" width="12px"></img> **[NZBGet][nzbget]** an efficient Usenet Downloader
+- <img alt="overseerr" src="docs/images/overseerr.png" width="12px"></img> **[Overseerr][overseerr]** request management and media discovery tool
+- <img alt="plex" src="docs/images/plex.png" width="12px"></img> **[Plex][plex]** organize all of your personal media so you can enjoy it no matter where you are
+- <img alt="portainer" src="docs/images/portainer.png" width="12px"></img> **[Portainer][portainer]** simple management UI for Docker
+- <img alt="prowlarr" src="docs/images/prowlarr.png" width="12px"></img> **[Prowlarr][prowlarr]** indexer manager/proxy for nzb and torrent
+- <img alt="radarr" src="docs/images/radarr.png" width="12px"></img> **[Radarr][radarr]** a fork of Sonarr to work with movies à la Couchpotato
+- <img alt="readarr" src="docs/images/readarr.png" width="12px"></img> **[Readarr][readarr]** ebook and audiobook collection manager for Usenet and BitTorrent users
+- <img alt="sonarr" src="docs/images/sonarr.png" width="12px"></img> **[Sonarr][sonarr]** smart PVR for newsgroup and bittorrent users
+- <img alt="tautulli" src="docs/images/tautulli.png" width="12px"></img> **[Tautulli][tautulli]** monitoring and tracking tool for Plex Media Server
 
-[plex]: https://hub.docker.com/r/linuxserver/plex
-[tautulli]: https://hub.docker.com/r/linuxserver/tautulli
-[sonarr]: https://hub.docker.com/r/linuxserver/sonarr
-[radarr]: https://hub.docker.com/r/linuxserver/radarr
-[lidarr]: https://hub.docker.com/r/linuxserver/lidarr
-[readarr]: https://hub.docker.com/r/linuxserver/readarr
-[overseerr]: https://hub.docker.com/r/linuxserver/overseerr
-[kavita]: https://hub.docker.com/r/kizaing/kavita
-[nzbget]: https://hub.docker.com/r/linuxserver/nzbget
 [deluge]: https://hub.docker.com/r/linuxserver/deluge
-[prowlarr]: https://hub.docker.com/r/linuxserver/prowlarr
 [gluetun]: https://hub.docker.com/r/qmcgaw/gluetun
+[kavita]: https://hub.docker.com/r/kizaing/kavita
+[lidarr]: https://hub.docker.com/r/linuxserver/lidarr
+[nzbget]: https://hub.docker.com/r/linuxserver/nzbget
+[overseerr]: https://hub.docker.com/r/linuxserver/overseerr
+[plex]: https://hub.docker.com/r/linuxserver/plex
 [portainer]: https://hub.docker.com/r/portainer/portainer
+[prowlarr]: https://hub.docker.com/r/linuxserver/prowlarr
+[radarr]: https://hub.docker.com/r/linuxserver/radarr
+[readarr]: https://hub.docker.com/r/linuxserver/readarr
+[sonarr]: https://hub.docker.com/r/linuxserver/sonarr
+[tautulli]: https://hub.docker.com/r/linuxserver/tautulli
 
 ## Requirements
 
