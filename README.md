@@ -7,6 +7,7 @@ Let's Encrypt.
 
 - <img alt="authentik" src="docs/images/authentik.png" width="12px"></img> **[Authentik][authentik]** is an open-source Identity Provider for SSO and much more
 - <img alt="deluge" src="docs/images/deluge.png" width="12px"></img> **[Deluge][deluge]** a lightweight BitTorrent client with web based management interface
+- <img alt="emulatorjs" src="docs/images/emulatorjs.png" width="12px"></img> **[Emulatorjs][emulatorjs]** browser based emulation for many retro consoles
 - <img alt="gluetun" src="docs/images/gluetun.png" width="12px"></img> **[Gluetun][gluetun]** VPN client to anonymize IP
 - <img alt="kavita" src="docs/images/kavita.png" width="12px"></img> **[Kavita][kavita]** free and open source web based ebook, manga and comic reader
 - <img alt="lidarr" src="docs/images/lidarr.png" width="12px"></img> **[Lidarr][lidarr]** looks and smells like Sonarr but made for music
@@ -22,6 +23,7 @@ Let's Encrypt.
 
 [authentik]: https://github.com/goauthentik/authentik/pkgs/container/server
 [deluge]: https://hub.docker.com/r/linuxserver/deluge
+[emulatorjs]: https://hub.docker.com/r/linuxserver/emulatorjs
 [gluetun]: https://hub.docker.com/r/qmcgaw/gluetun
 [kavita]: https://hub.docker.com/r/kizaing/kavita
 [lidarr]: https://hub.docker.com/r/linuxserver/lidarr

@@ -244,6 +244,34 @@ services:
         retries: 3
     restart: unless-stopped
 
+  emulatorjs:
+    image: linuxserver/emulatorjs
+    container_name: emulatorjs
+    logging: *default-logging
+    labels:
+      - traefik.enable=true
+      # emuatorjs web ui
+      - traefik.http.routers.emulatorjs-frontend.rule=HostRegexp(`play.${HTTP_HOST:-127.0.0.1.sslip.io}`, `play.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.emulatorjs-frontend.service=emulatorjs-frontend
+      - traefik.http.services.emulatorjs-frontend.loadBalancer.server.port=80
+      # emulatorjs management
+      - traefik.http.middlewares.emulatorjs-backend-add-trailing-slash-redirect.redirectRegex.regex=^(https?://[^/]+/admin)$$
+      - traefik.http.middlewares.emulatorjs-backend-add-trailing-slash-redirect.redirectRegex.replacement=$${1}/
+      - traefik.http.middlewares.emulatorjs-backend-add-trailing-slash-redirect.redirectRegex.permanent=true
+      - traefik.http.middlewares.emulatorjs-backend-strip-prefix.stripPrefix.prefixes=/admin
+      - traefik.http.routers.emulatorjs-backend.middlewares=emulatorjs-backend-add-trailing-slash-redirect,emulatorjs-backend-strip-prefix
+      - traefik.http.routers.emulatorjs-backend.rule=HostRegexp(`play.${HTTP_HOST:-127.0.0.1.sslip.io}`, `play.{subdomain:[0-9a-f:.-]+}.sslip.io`) && PathPrefix(`/admin`)
+      - traefik.http.routers.emulatorjs-backend.service=emulatorjs-backend
+      - traefik.http.services.emulatorjs-backend.loadBalancer.server.port=3000
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/London}
+    volumes:
+      - ./config/emulatorjs/config:/config
+      - ./config/emulatorjs/data:/data
+    restart: unless-stopped
+
   kavita:
     image: kizaing/kavita:nightly
     container_name: kavita
