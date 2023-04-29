@@ -320,15 +320,14 @@ services:
     image: traefik:latest
     container_name: traefik
     logging: *default-logging
-    ports:
-      - ${HTTP_PORT:-8080}:80
-      - ${HTTPS_PORT:-8443}:443
+    network_mode: host
     labels:
       - traefik.enable=${TRAEFIK_API_ENABLE:-false}
       - traefik.http.middlewares.api-auth.basicauth.users=${TRAEFIK_API_BASIC_AUTH_USERS:-}
       - traefik.http.routers.api.middlewares=${TRAEFIK_API_BASIC_AUTH_USERS:+api-auth}
       - traefik.http.routers.api.rule=HostRegexp(`traefik.${HTTP_HOST:-127.0.0.1.sslip.io}`, `traefik.{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.routers.api.service=api@internal
+      - traefik.http.services.api.loadBalancer.server.port=80 # dummy port required in host mode
     env_file:
       - ./.env
     entrypoint: /bin/sh
@@ -346,8 +345,8 @@ services:
         set -- "$$@" --api.dashboard=$${TRAEFIK_API_ENABLE:-false}
 
         # listen addresses
-        set -- "$$@" --entryPoints.web.address=:80
-        set -- "$$@" --entryPoints.websecure.address=:443
+        set -- "$$@" --entryPoints.web.address=:$${HTTP_PORT:-8080}
+        set -- "$$@" --entryPoints.websecure.address=:$${HTTPS_PORT:-8443}
 
         if [ "$${CF_API_EMAIL:-}" != "" ] && [ "$${CF_API_KEY:-}" != "" ]; then
           # configure letsencrypt acme
@@ -362,7 +361,12 @@ services:
           set -- "$$@" --entryPoints.websecure.http.tls.domains[0].sans=*.$${HTTP_HOST:-127.0.0.1.sslip.io}
 
           # redirect http to https
-          set -- "$$@" --entryPoints.web.http.redirections.entryPoint.to=websecure
+          if [ "$${HTTPS_REDIRECT_PORT:-}" != "" ]; then
+            HTTPS_ENTRYPOINT=":$$HTTPS_REDIRECT_PORT"
+          else
+            HTTPS_ENTRYPOINT="websecure"
+          fi
+          set -- "$$@" --entryPoints.web.http.redirections.entryPoint.to=$$HTTPS_ENTRYPOINT
           set -- "$$@" --entryPoints.web.http.redirections.entryPoint.scheme=https
         else
           echo 'time="'$(date -Iseconds)'" level=warn msg="CF_API_EMAIL and CF_API_KEY are not set. Continuing without letsencrypt."' >&2
