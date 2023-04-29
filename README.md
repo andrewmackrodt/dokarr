@@ -20,6 +20,7 @@ Let's Encrypt.
 - <img alt="readarr" src="docs/images/readarr.png" width="12px"></img> **[Readarr][readarr]** ebook and audiobook collection manager for Usenet and BitTorrent users
 - <img alt="sonarr" src="docs/images/sonarr.png" width="12px"></img> **[Sonarr][sonarr]** smart PVR for newsgroup and bittorrent users
 - <img alt="tautulli" src="docs/images/tautulli.png" width="12px"></img> **[Tautulli][tautulli]** monitoring and tracking tool for Plex Media Server
+- <img alt="webrcade" src="docs/images/webrcade.png" width="12px"></img> **[webЯcade][webrcade]** enables playing popular retro games in the browser
 
 [authentik]: https://github.com/goauthentik/authentik/pkgs/container/server
 [deluge]: https://hub.docker.com/r/linuxserver/deluge
@@ -36,6 +37,7 @@ Let's Encrypt.
 [readarr]: https://hub.docker.com/r/linuxserver/readarr
 [sonarr]: https://hub.docker.com/r/linuxserver/sonarr
 [tautulli]: https://hub.docker.com/r/linuxserver/tautulli
+[webrcade]: https://hub.docker.com/r/webrcade/webrcade
 
 ## Requirements
 

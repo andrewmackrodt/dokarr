@@ -251,6 +251,55 @@ services:
         retries: 3
     restart: unless-stopped
 
+  webrcade:
+    image: webrcade/webrcade
+    container_name: webrcade
+    logging: *default-logging
+    platform: linux/amd64
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.webrcade.loadBalancer.server.port=80
+      # redirect paths to add a trailing slash if the request does not contain a file extension
+      - traefik.http.middlewares.webrcade-slash.redirectRegex.regex=^(.*/[^/.?]+)$$
+      - traefik.http.middlewares.webrcade-slash.redirectRegex.replacement=$${1}/
+      # internally prefix /play to webrcade service
+      - traefik.http.middlewares.webrcade-prefix.addPrefix.prefix=/play
+      # create router
+      - traefik.http.routers.webrcade.middlewares=webrcade-slash,webrcade-prefix
+      - traefik.http.routers.webrcade.rule=HostRegexp(`play.${HTTP_HOST:-127.0.0.1.sslip.io}`, `play.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+    environment:
+      - HTTP_HOST=${HTTP_HOST:+play.$HTTP_HOST}
+      - WEBRCADE_DROPBOX_APP_KEY=${WEBRCADE_DROPBOX_APP_KEY:-}
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |-
+        # enable cloud sync by replacing play.webrcade.com dropbox config
+        if [ "$${HTTP_HOST:-}" != "" ] && [ "$${WEBRCADE_DROPBOX_APP_KEY:-}" != "" ]; then
+          find /var/www/html -type f -regextype awk -regex '.+\.(js(\.map)?|html)$' \
+            | xargs grep -l 'play.webrcade.com' \
+            | xargs -r sed -i "s/play.webrcade.com/$$HTTP_HOST/g"
+          find /var/www/html -type f -regextype awk -regex '.+\.(js(\.map)?|html)$' \
+            | xargs grep -l 'xvz6ybh9wta2u30' \
+            | xargs -r sed -i "s/xvz6ybh9wta2u30/$$WEBRCADE_DROPBOX_APP_KEY/g"
+        fi
+
+        # replace the default feed
+        if [ -f /var/www/html/play/content/default-feed.json ]; then
+          cp /var/www/html/play/content/default-feed.json /var/www/html/play/default-feed.json
+        fi
+
+        # fix mac m1 errors starting apache
+        if ! grep -qE '^Mutex' /etc/apache2/apache2.conf; then
+          echo "Mutex posixsem" >>/etc/apache2/apache2.conf
+        fi
+
+        # execute the webrcade entrypoint
+        exec /usr/local/bin/docker-php-entrypoint /home/start.sh "$@"
+    volumes:
+      - ./config/webrcade:/var/www/html/play/content:ro
+    restart: unless-stopped
+
   kavita:
     image: kizaing/kavita:nightly
     container_name: kavita
