@@ -1,6 +1,0 @@
-*
-!.gitignore
-!nginx.tmpl
-!conf.d/
-conf.d/*
-!conf.d/custom.conf

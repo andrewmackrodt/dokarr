@@ -1,6 +1,5 @@
 cache/
 media/
-share/nginx/html/.well-known/
 .idea/
 .vscode/
 .DS_Store

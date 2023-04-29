@@ -18,6 +18,9 @@ services:
     runtime: ${PLEX_RUNTIME:-runc}
     labels:
       - autoheal=true
+      - traefik.enable=true
+      - traefik.http.routers.plex.rule=HostRegexp(`${HTTP_HOST:-127.0.0.1.sslip.io}`, `{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.services.plex.loadBalancer.server.port=32400
     environment:
       # plex
       - PUID=${PUID:-1000}
@@ -27,15 +30,6 @@ services:
       # nvidia
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,video,utility
-      # nginx-proxy
-      - "VIRTUAL_HOST=\
-          ${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^[0-9a-f:.-]+\\.sslip\\.io$$"
-      - CERT_NAME=${HTTP_HOST:-127.0.0.1.sslip.io}
-      - VIRTUAL_PORT=32400
-      # acme-companion
-      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=${HTTP_HOST:-}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     ports:
       - ${PLEX_PORT:-32400}:32400
     volumes:
@@ -43,12 +37,12 @@ services:
       - ./config/plex:/config
       - ./media:/media
       # Optional volumes, e.g. to follow symlinks
-      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/.null/0}
-      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/.null/1}
-      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/.null/2}
-      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/.null/3}
-      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/.null/4}
-      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/.null/5}
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/host/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/host/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/host/null4}
+      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/host/null5}
     healthcheck:
         test:
           - CMD
@@ -63,20 +57,14 @@ services:
   tautulli:
     image: linuxserver/tautulli
     container_name: tautulli
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.tautulli.rule=HostRegexp(`tautulli.${HTTP_HOST:-127.0.0.1.sslip.io}`, `tautulli.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.services.tautulli.loadBalancer.server.port=8181
     environment:
-      # tautulli
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
-      # nginx-proxy
-      - "VIRTUAL_HOST=\
-          tautulli.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^tautulli\\.[0-9a-f:.-]+\\.sslip\\.io$$"
-      - CERT_NAME=tautulli.${HTTP_HOST:-127.0.0.1.sslip.io}
-      - VIRTUAL_PORT=8181
-      # acme-companion
-      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=tautulli.${HTTP_HOST:-}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
       - ./config/plex/Library/Application Support/Plex Media Server/Logs:/logs
       - ./config/tautulli:/config
@@ -87,26 +75,20 @@ services:
     container_name: kavita
     logging: *default-logging
     user: ${PUID:-1000}:${PGID:-1000}
-    environment:
-      # nginx-proxy
-      - "VIRTUAL_HOST=\
-          read.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^read\\.[0-9a-f:.-]+\\.sslip\\.io$$"
-      - CERT_NAME=read.${HTTP_HOST:-127.0.0.1.sslip.io}
-      - VIRTUAL_PORT=5000
-      # acme-companion
-      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=read.${HTTP_HOST:-}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.kavita.rule=HostRegexp(`read.${HTTP_HOST:-127.0.0.1.sslip.io}`, `read.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.services.kavita.loadBalancer.server.port=5000
     volumes:
       - ./config/kavita:/kavita/config
       - ./media:/media
       # Optional volumes, e.g. to follow symlinks
-      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/.null/0}
-      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/.null/1}
-      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/.null/2}
-      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/.null/3}
-      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/.null/4}
-      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/.null/5}
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/host/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/host/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/host/null4}
+      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/host/null5}
     restart: unless-stopped
 
   #=============================================================================
@@ -117,31 +99,25 @@ services:
     image: linuxserver/sonarr
     container_name: sonarr
     logging: *default-logging
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.sonarr.rule=HostRegexp(`sonarr.${HTTP_HOST:-127.0.0.1.sslip.io}`, `sonarr.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.services.sonarr.loadBalancer.server.port=8989
     environment:
-      # sonarr
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - XDG_CONFIG_HOME=/tmp/xdg
-      # nginx-proxy
-      - "VIRTUAL_HOST=\
-          sonarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^sonarr\\.[0-9a-f:.-]+\\.sslip\\.io$$"
-      - CERT_NAME=sonarr.${HTTP_HOST:-127.0.0.1.sslip.io}
-      - VIRTUAL_PORT=8989
-      # acme-companion
-      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=sonarr.${HTTP_HOST:-}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
       - ./config/sonarr:/config
       - ./media:/media
       # Optional volumes, e.g. to follow symlinks
-      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/.null/0}
-      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/.null/1}
-      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/.null/2}
-      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/.null/3}
-      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/.null/4}
-      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/.null/5}
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/host/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/host/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/host/null4}
+      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/host/null5}
     depends_on:
       - prowlarr
     restart: unless-stopped
@@ -150,31 +126,25 @@ services:
     image: linuxserver/radarr
     container_name: radarr
     logging: *default-logging
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.radarr.rule=HostRegexp(`radarr.${HTTP_HOST:-127.0.0.1.sslip.io}`, `radarr.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.services.radarr.loadBalancer.server.port=7878
     environment:
-      # radarr
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - XDG_CONFIG_HOME=/tmp/xdg
-      # nginx-proxy
-      - "VIRTUAL_HOST=\
-          radarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^radarr\\.[0-9a-f:.-]+\\.sslip\\.io$$"
-      - CERT_NAME=radarr.${HTTP_HOST:-127.0.0.1.sslip.io}
-      - VIRTUAL_PORT=7878
-      # acme-companion
-      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=radarr.${HTTP_HOST:-}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
       - ./config/radarr:/config
       - ./media:/media
       # Optional volumes, e.g. to follow symlinks
-      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/.null/0}
-      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/.null/1}
-      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/.null/2}
-      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/.null/3}
-      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/.null/4}
-      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/.null/5}
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/host/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/host/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/host/null4}
+      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/host/null5}
     depends_on:
       - prowlarr
     restart: unless-stopped
@@ -183,31 +153,25 @@ services:
     image: linuxserver/lidarr
     container_name: lidarr
     logging: *default-logging
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.lidarr.rule=HostRegexp(`lidarr.${HTTP_HOST:-127.0.0.1.sslip.io}`, `lidarr.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.services.lidarr.loadBalancer.server.port=8181
     environment:
-      # lidarr
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - XDG_CONFIG_HOME=/tmp/xdg
-      # nginx-proxy
-      - "VIRTUAL_HOST=\
-          lidarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^lidarr\\.[0-9a-f:.-]+\\.sslip\\.io$$"
-      - CERT_NAME=lidarr.${HTTP_HOST:-127.0.0.1.sslip.io}
-      - VIRTUAL_PORT=8686
-      # acme-companion
-      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=lidarr.${HTTP_HOST:-}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
       - ./config/lidarr:/config
       - ./media:/media
       # Optional volumes, e.g. to follow symlinks
-      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/.null/0}
-      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/.null/1}
-      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/.null/2}
-      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/.null/3}
-      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/.null/4}
-      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/.null/5}
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/host/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/host/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/host/null4}
+      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/host/null5}
     depends_on:
       - prowlarr
     restart: unless-stopped
@@ -216,51 +180,39 @@ services:
     image: ghcr.io/linuxserver/readarr:nightly
     container_name: readarr
     logging: *default-logging
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.readarr.rule=HostRegexp(`readarr.${HTTP_HOST:-127.0.0.1.sslip.io}`, `readarr.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.services.readarr.loadBalancer.server.port=8787
     environment:
-      # readarr
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - XDG_CONFIG_HOME=/tmp/xdg
-      # nginx-proxy
-      - "VIRTUAL_HOST=\
-          readarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^readarr\\.[0-9a-f:.-]+\\.sslip\\.io$$"
-      - CERT_NAME=readarr.${HTTP_HOST:-127.0.0.1.sslip.io}
-      - VIRTUAL_PORT=8787
-      # acme-companion
-      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=readarr.${HTTP_HOST:-}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
       - ./config/readarr:/config
       - ./media:/media
       # Optional volumes, e.g. to follow symlinks
-      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/.null/0}
-      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/.null/1}
-      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/.null/2}
-      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/.null/3}
-      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/.null/4}
-      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/.null/5}
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/host/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/host/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/host/null4}
+      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/host/null5}
     restart: unless-stopped
 
   overseerr:
     image: linuxserver/overseerr
     container_name: overseerr
     logging: *default-logging
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.overseerr.rule=HostRegexp(`requests.${HTTP_HOST:-127.0.0.1.sslip.io}`, `requests.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.services.overseerr.loadBalancer.server.port=5055
     environment:
-      # overseerr
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
-      # nginx-proxy
-      - "VIRTUAL_HOST=\
-          requests.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^requests\\.[0-9a-f:.-]+\\.sslip\\.io$$"
-      - CERT_NAME=requests.${HTTP_HOST:-127.0.0.1.sslip.io}
-      - VIRTUAL_PORT=5055
-      # acme-companion
-      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=requests.${HTTP_HOST:-}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
       - ./config/overseerr:/config
     restart: unless-stopped
@@ -273,21 +225,15 @@ services:
     image: ghcr.io/linuxserver/prowlarr:develop
     container_name: prowlarr
     logging: *default-logging
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.prowlarr.rule=HostRegexp(`prowlarr.${HTTP_HOST:-127.0.0.1.sslip.io}`, `prowlarr.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.services.prowlarr.loadBalancer.server.port=9696
     environment:
-      # prowlarr
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - XDG_CONFIG_HOME=/tmp/xdg
-      # nginx-proxy
-      - "VIRTUAL_HOST=\
-          prowlarr.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^prowlarr\\.[0-9a-f:.-]+\\.sslip\\.io$$"
-      - CERT_NAME=prowlarr.${HTTP_HOST:-127.0.0.1.sslip.io}
-      - VIRTUAL_PORT=9696
-      # acme-companion
-      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=prowlarr.${HTTP_HOST:-}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
       - ./config/prowlarr:/config
     depends_on:
@@ -302,30 +248,24 @@ services:
     image: linuxserver/nzbget
     container_name: nzbget
     logging: *default-logging
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.nzbget.rule=HostRegexp(`nzbget.${HTTP_HOST:-127.0.0.1.sslip.io}`, `nzbget.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.services.nzbget.loadBalancer.server.port=6789
     environment:
-      # nzbget
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
-      # nginx-proxy
-      - "VIRTUAL_HOST=\
-          nzbget.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^nzbget\\.[0-9a-f:.-]+\\.sslip\\.io$$"
-      - CERT_NAME=nzbget.${HTTP_HOST:-127.0.0.1.sslip.io}
-      - VIRTUAL_PORT=6789
-      # acme-companion
-      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=nzbget.${HTTP_HOST:-}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
       - ./config/nzbget:/config
       - ./media:/media
       # Optional volumes, e.g. to follow symlinks
-      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/.null/0}
-      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/.null/1}
-      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/.null/2}
-      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/.null/3}
-      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/.null/4}
-      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/.null/5}
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/host/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/host/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/host/null4}
+      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/host/null5}
     restart: unless-stopped
 
   deluge:
@@ -336,6 +276,9 @@ services:
     entrypoint: /usr/local/bin/init
     labels:
       - autoheal=true
+      - traefik.enable=true
+      - traefik.http.routers.deluge.rule=HostRegexp(`deluge.${HTTP_HOST:-127.0.0.1.sslip.io}`, `deluge.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.services.deluge.loadBalancer.server.port=8112
     environment:
       # deluge
       - PUID=${PUID:-1000}
@@ -344,20 +287,18 @@ services:
       - UMASK=002
       # vpn
       - FIREWALL_VPN_INPUT_PORTS=${FIREWALL_VPN_INPUT_PORTS}
-      # nginx-proxy
-      - NETWORK_ACCESS=internal
     volumes:
       - ./config/deluge:/config
       - ./config/vpn:/gluetun:ro
       - ./media:/media
       - ./share/deluge/init:/usr/local/bin/init
       # Optional volumes, e.g. to follow symlinks
-      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/.null/0}
-      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/.null/1}
-      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/.null/2}
-      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/.null/3}
-      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/.null/4}
-      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/.null/5}
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/host/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/host/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/host/null4}
+      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/host/null5}
     healthcheck:
         test:
           - CMD
@@ -375,34 +316,70 @@ services:
   # http reverse proxy
   #=============================================================================
 
-  nginx:
-    image: nginxproxy/nginx-proxy
-    container_name: nginx
+  traefik:
+    image: traefik:latest
+    container_name: traefik
     logging: *default-logging
     ports:
       - ${HTTP_PORT:-8080}:80
       - ${HTTPS_PORT:-8443}:443
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./config/nginx/nginx.tmpl:/app/nginx.tmpl
-      - ./config/nginx/certs:/etc/nginx/certs
-      - ./config/nginx/certs:/etc/nginx/dhparam
-      - ./config/nginx/conf.d:/etc/nginx/conf.d
-      - ./config/nginx/vhost.d:/etc/nginx/vhost.d
-      - ./share/nginx/html:/usr/share/nginx/html
-    restart: unless-stopped
+    labels:
+      - traefik.enable=${TRAEFIK_API_ENABLE:-false}
+      - traefik.http.middlewares.api-auth.basicauth.users=${TRAEFIK_API_BASIC_AUTH_USERS:-}
+      - traefik.http.routers.api.middlewares=${TRAEFIK_API_BASIC_AUTH_USERS:+api-auth}
+      - traefik.http.routers.api.rule=HostRegexp(`traefik.${HTTP_HOST:-127.0.0.1.sslip.io}`, `traefik.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.api.service=api@internal
+    env_file:
+      - ./.env
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |-
+        # act as a reverse proxy for docker containers with label "traefik.enable=true"
+        set -- "$$@" --providers.docker=true
+        set -- "$$@" --providers.docker.exposedByDefault=false
 
-  letsencrypt:
-    image: nginxproxy/acme-companion
-    container_name: letsencrypt
-    logging: *default-logging
-    volumes_from:
-      - nginx
+        # enable stdout access log
+        set -- "$$@" --accessLog=true
+
+        # enable traefik dashboard
+        set -- "$$@" --api.dashboard=$${TRAEFIK_API_ENABLE:-false}
+
+        # listen addresses
+        set -- "$$@" --entryPoints.web.address=:80
+        set -- "$$@" --entryPoints.websecure.address=:443
+
+        if [ "$${CF_API_EMAIL:-}" != "" ] && [ "$${CF_API_KEY:-}" != "" ]; then
+          # configure letsencrypt acme
+          set -- "$$@" --certificatesResolvers.letsencrypt.acme.dnsChallenge=true
+          set -- "$$@" --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare
+          set -- "$$@" --certificatesResolvers.letsencrypt.acme.email=$${LETSENCRYPT_EMAIL:-$$CF_API_EMAIL}
+          set -- "$$@" --certificatesResolvers.letsencrypt.acme.storage=/etc/traefik/acme/acme.json
+  
+          # configure letsencrypt default certificate
+          set -- "$$@" --entryPoints.websecure.http.tls.certResolver=letsencrypt
+          set -- "$$@" --entryPoints.websecure.http.tls.domains[0].main=$${HTTP_HOST:-127.0.0.1.sslip.io}
+          set -- "$$@" --entryPoints.websecure.http.tls.domains[0].sans=*.$${HTTP_HOST:-127.0.0.1.sslip.io}
+
+          # redirect http to https
+          set -- "$$@" --entryPoints.web.http.redirections.entryPoint.to=websecure
+          set -- "$$@" --entryPoints.web.http.redirections.entryPoint.scheme=https
+        else
+          echo 'time="'$(date -Iseconds)'" level=warn msg="CF_API_EMAIL and CF_API_KEY are not set. Continuing without letsencrypt."' >&2
+          set -- "$$@" --entryPoints.websecure.http.tls=true
+        fi
+
+        # trust insecure certificates
+        set -- "$$@" --serversTransport.insecureSkipVerify=true
+
+        # opt out of usage statistics
+        set -- "$$@" --global.sendAnonymousUsage=false
+        
+        # start traefik
+        exec /entrypoint.sh "$$@"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./config/nginx/acme.sh:/etc/acme.sh
-    depends_on:
-      - nginx
+      - ./config/traefik/acme:/etc/traefik/acme
     restart: unless-stopped
 
   #=============================================================================
@@ -417,8 +394,6 @@ services:
       - NET_ADMIN
     devices:
       - /dev/net/tun
-    expose:
-      - 8112
     ports:
       # http-proxy
       - 8888:8888
@@ -431,15 +406,6 @@ services:
       - VPNSP=mullvad
       - WIREGUARD_ADDRESS=${WIREGUARD_ADDRESS:-10.64.222.21/32}
       - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
-      # nginx-proxy
-      - "VIRTUAL_HOST=\
-          deluge.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^deluge\\.[0-9a-f:.-]+\\.sslip\\.io$$"
-      - CERT_NAME=deluge.${HTTP_HOST:-127.0.0.1.sslip.io}
-      - VIRTUAL_PORT=8112
-      # acme-companion
-      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=deluge.${HTTP_HOST:-}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
       - ./config/vpn:/gluetun
     restart: unless-stopped
@@ -464,41 +430,16 @@ services:
     image: ${PORTAINER_IMAGE:-portainer/portainer-ce}
     container_name: portainer
     logging: *default-logging
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.portainer.rule=HostRegexp(`portainer.${HTTP_HOST:-127.0.0.1.sslip.io}`, `portainer.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.services.portainer.loadBalancer.server.port=9000
     environment:
-      # portainer
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - VERSION=docker
-      # nginx-proxy
-      - "VIRTUAL_HOST=\
-          portainer.${HTTP_HOST:-127.0.0.1.sslip.io},\
-          ~^portainer\\.[0-9a-f:.-]+\\.sslip\\.io$$"
-      - CERT_NAME=portainer.${HTTP_HOST:-127.0.0.1.sslip.io}
-      - VIRTUAL_PORT=9000
-      # acme-companion
-      - ${LE_HOST_KEY:-NGINX_SSL_HOST}=portainer.${HTTP_HOST:-}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./config/portainer:/data
-    restart: unless-stopped
-
-  #=============================================================================
-  # host management
-  #=============================================================================
-
-  ddclient:
-    image: linuxserver/ddclient
-    container_name: ddclient
-    logging: *default-logging
-    environment:
-      # ddclient
-      - PUID=${PUID:-1000}
-      - PGID=${PGID:-1000}
-      - TZ=${TZ:-Europe/London}
-      # nginx-proxy
-      - NETWORK_ACCESS=internal
-    volumes:
-      - ./config/ddclient:/config
     restart: unless-stopped
