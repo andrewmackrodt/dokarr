@@ -258,15 +258,13 @@ services:
     platform: linux/amd64
     labels:
       - traefik.enable=true
-      - traefik.http.services.webrcade.loadBalancer.server.port=80
       # redirect paths to add a trailing slash if the request does not contain a file extension
       - traefik.http.middlewares.webrcade-slash.redirectRegex.regex=^(.*/[^/.?]+)$$
       - traefik.http.middlewares.webrcade-slash.redirectRegex.replacement=$${1}/
-      # internally prefix /play to webrcade service
-      - traefik.http.middlewares.webrcade-prefix.addPrefix.prefix=/play
+      - traefik.http.routers.webrcade.middlewares=webrcade-slash
       # create router
-      - traefik.http.routers.webrcade.middlewares=webrcade-slash,webrcade-prefix
       - traefik.http.routers.webrcade.rule=HostRegexp(`play.${HTTP_HOST:-127.0.0.1.sslip.io}`, `play.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.services.webrcade.loadBalancer.server.port=80
     environment:
       - HTTP_HOST=${HTTP_HOST:+play.$HTTP_HOST}
       - WEBRCADE_DROPBOX_APP_KEY=${WEBRCADE_DROPBOX_APP_KEY:-}
@@ -286,13 +284,17 @@ services:
 
         # replace the default feed
         if [ -f /var/www/html/play/content/default-feed.json ]; then
-          cp /var/www/html/play/content/default-feed.json /var/www/html/play/default-feed.json
+          rm /var/www/html/play/default-feed.json
+          ln -s content/default-feed.json /var/www/html/play/default-feed.json
         fi
 
         # fix mac m1 errors starting apache
         if ! grep -qE '^Mutex' /etc/apache2/apache2.conf; then
           echo "Mutex posixsem" >>/etc/apache2/apache2.conf
         fi
+
+        # change apache document root to serve from /play directory
+        sed -i -E 's#^(\s+DocumentRoot /var/www/html)\s*$#\1/play#' /etc/apache2/sites-enabled/000-default.conf
 
         # execute the webrcade entrypoint
         exec /usr/local/bin/docker-php-entrypoint /home/start.sh "$@"
