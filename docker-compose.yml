@@ -8,6 +8,80 @@ x-logging:
 
 services:
   #=============================================================================
+  # http reverse proxy
+  #=============================================================================
+
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    logging: *default-logging
+    network_mode: host
+    labels:
+      - traefik.enable=${TRAEFIK_API_ENABLE:-false}
+      - traefik.http.middlewares.api-auth.basicauth.users=${TRAEFIK_API_BASIC_AUTH_USERS:-}
+      - traefik.http.routers.api.middlewares=${TRAEFIK_API_BASIC_AUTH_USERS:+api-auth}
+      - traefik.http.routers.api.rule=HostRegexp(`traefik.${HTTP_HOST:-127.0.0.1.sslip.io}`, `traefik.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.api.service=api@internal
+      - traefik.http.services.api.loadBalancer.server.port=80 # dummy port required in host mode
+    env_file:
+      - ./.env
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |-
+        # act as a reverse proxy for docker containers with label "traefik.enable=true"
+        set -- "$$@" --providers.docker=true
+        set -- "$$@" --providers.docker.exposedByDefault=false
+
+        # enable stdout access log
+        set -- "$$@" --accessLog=true
+
+        # enable traefik dashboard
+        set -- "$$@" --api.dashboard=$${TRAEFIK_API_ENABLE:-false}
+
+        # listen addresses
+        set -- "$$@" --entryPoints.web.address=:$${HTTP_PORT:-8080}
+        set -- "$$@" --entryPoints.websecure.address=:$${HTTPS_PORT:-8443}
+
+        if [ "$${CF_API_EMAIL:-}" != "" ] && [ "$${CF_API_KEY:-}" != "" ]; then
+          # configure letsencrypt acme
+          set -- "$$@" --certificatesResolvers.letsencrypt.acme.dnsChallenge=true
+          set -- "$$@" --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare
+          set -- "$$@" --certificatesResolvers.letsencrypt.acme.email=$${LETSENCRYPT_EMAIL:-$$CF_API_EMAIL}
+          set -- "$$@" --certificatesResolvers.letsencrypt.acme.storage=/etc/traefik/acme/acme.json
+        
+          # configure letsencrypt default certificate
+          set -- "$$@" --entryPoints.websecure.http.tls.certResolver=letsencrypt
+          set -- "$$@" --entryPoints.websecure.http.tls.domains[0].main=$${HTTP_HOST:-127.0.0.1.sslip.io}
+          set -- "$$@" --entryPoints.websecure.http.tls.domains[0].sans=*.$${HTTP_HOST:-127.0.0.1.sslip.io}
+
+          # redirect http to https
+          if [ "$${HTTPS_REDIRECT_PORT:-}" != "" ]; then
+            HTTPS_ENTRYPOINT=":$$HTTPS_REDIRECT_PORT"
+          else
+            HTTPS_ENTRYPOINT="websecure"
+          fi
+          set -- "$$@" --entryPoints.web.http.redirections.entryPoint.to=$$HTTPS_ENTRYPOINT
+          set -- "$$@" --entryPoints.web.http.redirections.entryPoint.scheme=https
+        else
+          echo 'time="'$(date -Iseconds)'" level=warn msg="CF_API_EMAIL and CF_API_KEY are not set. Continuing without letsencrypt."' >&2
+          set -- "$$@" --entryPoints.websecure.http.tls=true
+        fi
+
+        # trust insecure certificates
+        set -- "$$@" --serversTransport.insecureSkipVerify=true
+
+        # opt out of usage statistics
+        set -- "$$@" --global.sendAnonymousUsage=false
+        
+        # start traefik
+        exec /entrypoint.sh "$$@"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/traefik/acme:/etc/traefik/acme
+    restart: unless-stopped
+
+  #=============================================================================
   # media servers
   #=============================================================================
 
@@ -52,23 +126,6 @@ services:
         interval: 10s
         timeout: 8s
         retries: 3
-    restart: unless-stopped
-
-  tautulli:
-    image: linuxserver/tautulli
-    container_name: tautulli
-    logging: *default-logging
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.tautulli.rule=HostRegexp(`tautulli.${HTTP_HOST:-127.0.0.1.sslip.io}`, `tautulli.{subdomain:[0-9a-f:.-]+}.sslip.io`)
-      - traefik.http.services.tautulli.loadBalancer.server.port=8181
-    environment:
-      - PUID=${PUID:-1000}
-      - PGID=${PGID:-1000}
-      - TZ=${TZ:-Europe/London}
-    volumes:
-      - ./config/plex/Library/Application Support/Plex Media Server/Logs:/logs
-      - ./config/tautulli:/config
     restart: unless-stopped
 
   kavita:
@@ -245,30 +302,6 @@ services:
   # download clients
   #=============================================================================
 
-  nzbget:
-    image: linuxserver/nzbget
-    container_name: nzbget
-    logging: *default-logging
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.nzbget.rule=HostRegexp(`nzbget.${HTTP_HOST:-127.0.0.1.sslip.io}`, `nzbget.{subdomain:[0-9a-f:.-]+}.sslip.io`)
-      - traefik.http.services.nzbget.loadBalancer.server.port=6789
-    environment:
-      - PUID=${PUID:-1000}
-      - PGID=${PGID:-1000}
-      - TZ=${TZ:-Europe/London}
-    volumes:
-      - ./config/nzbget:/config
-      - ./media:/media
-      # Optional volumes, e.g. to follow symlinks
-      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
-      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
-      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/host/null2}
-      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/host/null3}
-      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/host/null4}
-      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/host/null5}
-    restart: unless-stopped
-
   deluge:
     image: linuxserver/deluge
     container_name: deluge
@@ -313,78 +346,49 @@ services:
       - vpn
     restart: unless-stopped
 
-  #=============================================================================
-  # http reverse proxy
-  #=============================================================================
-
-  traefik:
-    image: traefik:latest
-    container_name: traefik
+  nzbget:
+    image: linuxserver/nzbget
+    container_name: nzbget
     logging: *default-logging
-    network_mode: host
     labels:
-      - traefik.enable=${TRAEFIK_API_ENABLE:-false}
-      - traefik.http.middlewares.api-auth.basicauth.users=${TRAEFIK_API_BASIC_AUTH_USERS:-}
-      - traefik.http.routers.api.middlewares=${TRAEFIK_API_BASIC_AUTH_USERS:+api-auth}
-      - traefik.http.routers.api.rule=HostRegexp(`traefik.${HTTP_HOST:-127.0.0.1.sslip.io}`, `traefik.{subdomain:[0-9a-f:.-]+}.sslip.io`)
-      - traefik.http.routers.api.service=api@internal
-      - traefik.http.services.api.loadBalancer.server.port=80 # dummy port required in host mode
-    env_file:
-      - ./.env
-    entrypoint: /bin/sh
-    command:
-      - -c
-      - |-
-        # act as a reverse proxy for docker containers with label "traefik.enable=true"
-        set -- "$$@" --providers.docker=true
-        set -- "$$@" --providers.docker.exposedByDefault=false
-
-        # enable stdout access log
-        set -- "$$@" --accessLog=true
-
-        # enable traefik dashboard
-        set -- "$$@" --api.dashboard=$${TRAEFIK_API_ENABLE:-false}
-
-        # listen addresses
-        set -- "$$@" --entryPoints.web.address=:$${HTTP_PORT:-8080}
-        set -- "$$@" --entryPoints.websecure.address=:$${HTTPS_PORT:-8443}
-
-        if [ "$${CF_API_EMAIL:-}" != "" ] && [ "$${CF_API_KEY:-}" != "" ]; then
-          # configure letsencrypt acme
-          set -- "$$@" --certificatesResolvers.letsencrypt.acme.dnsChallenge=true
-          set -- "$$@" --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare
-          set -- "$$@" --certificatesResolvers.letsencrypt.acme.email=$${LETSENCRYPT_EMAIL:-$$CF_API_EMAIL}
-          set -- "$$@" --certificatesResolvers.letsencrypt.acme.storage=/etc/traefik/acme/acme.json
-  
-          # configure letsencrypt default certificate
-          set -- "$$@" --entryPoints.websecure.http.tls.certResolver=letsencrypt
-          set -- "$$@" --entryPoints.websecure.http.tls.domains[0].main=$${HTTP_HOST:-127.0.0.1.sslip.io}
-          set -- "$$@" --entryPoints.websecure.http.tls.domains[0].sans=*.$${HTTP_HOST:-127.0.0.1.sslip.io}
-
-          # redirect http to https
-          if [ "$${HTTPS_REDIRECT_PORT:-}" != "" ]; then
-            HTTPS_ENTRYPOINT=":$$HTTPS_REDIRECT_PORT"
-          else
-            HTTPS_ENTRYPOINT="websecure"
-          fi
-          set -- "$$@" --entryPoints.web.http.redirections.entryPoint.to=$$HTTPS_ENTRYPOINT
-          set -- "$$@" --entryPoints.web.http.redirections.entryPoint.scheme=https
-        else
-          echo 'time="'$(date -Iseconds)'" level=warn msg="CF_API_EMAIL and CF_API_KEY are not set. Continuing without letsencrypt."' >&2
-          set -- "$$@" --entryPoints.websecure.http.tls=true
-        fi
-
-        # trust insecure certificates
-        set -- "$$@" --serversTransport.insecureSkipVerify=true
-
-        # opt out of usage statistics
-        set -- "$$@" --global.sendAnonymousUsage=false
-        
-        # start traefik
-        exec /entrypoint.sh "$$@"
+      - traefik.enable=true
+      - traefik.http.routers.nzbget.rule=HostRegexp(`nzbget.${HTTP_HOST:-127.0.0.1.sslip.io}`, `nzbget.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.services.nzbget.loadBalancer.server.port=6789
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/London}
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./config/traefik/acme:/etc/traefik/acme
+      - ./config/nzbget:/config
+      - ./media:/media
+      # Optional volumes, e.g. to follow symlinks
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/host/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/host/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/host/null4}
+      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/host/null5}
+    restart: unless-stopped
+
+  #=============================================================================
+  # stats
+  #=============================================================================
+
+  tautulli:
+    image: linuxserver/tautulli
+    container_name: tautulli
+    logging: *default-logging
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.tautulli.rule=HostRegexp(`tautulli.${HTTP_HOST:-127.0.0.1.sslip.io}`, `tautulli.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.services.tautulli.loadBalancer.server.port=8181
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/London}
+    volumes:
+      - ./config/plex/Library/Application Support/Plex Media Server/Logs:/logs
+      - ./config/tautulli:/config
     restart: unless-stopped
 
   #=============================================================================
@@ -419,18 +423,6 @@ services:
   # container management
   #=============================================================================
 
-  autoheal:
-    image: willfarrell/autoheal
-    container_name: autoheal
-    logging: *default-logging
-    security_opt:
-      - no-new-privileges
-    environment:
-      - AUTOHEAL_CONTAINER_LABEL=autoheal
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    restart: unless-stopped
-
   portainer:
     image: ${PORTAINER_IMAGE:-portainer/portainer-ce}
     container_name: portainer
@@ -447,4 +439,16 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./config/portainer:/data
+    restart: unless-stopped
+
+  autoheal:
+    image: willfarrell/autoheal
+    container_name: autoheal
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=autoheal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
