@@ -214,7 +214,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.lidarr.rule=HostRegexp(`lidarr.${HTTP_HOST:-127.0.0.1.sslip.io}`, `lidarr.{subdomain:[0-9a-f:.-]+}.sslip.io`)
-      - traefik.http.services.lidarr.loadBalancer.server.port=8181
+      - traefik.http.services.lidarr.loadBalancer.server.port=8686
     environment:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
