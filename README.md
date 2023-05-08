@@ -5,6 +5,7 @@ Let's Encrypt.
 
 **Includes:**
 
+- <img alt="authentik" src="docs/images/authentik.png" width="12px"></img> **[Authentik][authentik]** is an open-source Identity Provider for SSO and much more
 - <img alt="deluge" src="docs/images/deluge.png" width="12px"></img> **[Deluge][deluge]** a lightweight BitTorrent client with web based management interface
 - <img alt="gluetun" src="docs/images/gluetun.png" width="12px"></img> **[Gluetun][gluetun]** VPN client to anonymize IP
 - <img alt="kavita" src="docs/images/kavita.png" width="12px"></img> **[Kavita][kavita]** free and open source web based ebook, manga and comic reader
@@ -19,6 +20,7 @@ Let's Encrypt.
 - <img alt="sonarr" src="docs/images/sonarr.png" width="12px"></img> **[Sonarr][sonarr]** smart PVR for newsgroup and bittorrent users
 - <img alt="tautulli" src="docs/images/tautulli.png" width="12px"></img> **[Tautulli][tautulli]** monitoring and tracking tool for Plex Media Server
 
+[authentik]: https://github.com/goauthentik/authentik/pkgs/container/server
 [deluge]: https://hub.docker.com/r/linuxserver/deluge
 [gluetun]: https://hub.docker.com/r/qmcgaw/gluetun
 [kavita]: https://hub.docker.com/r/kizaing/kavita
@@ -75,6 +77,20 @@ CF_API_KEY=ec059099c531fdabbd06ca8cd5f7a8bccd190
 
 # the top-level domain used for letsencrypt certificates
 HTTP_HOST=yourdomain.com
+```
+
+### Authentik
+
+Set the required `AUTHENTIK_*` environment variables in `.env`. These values
+should not be changed after setting them once. Replace `changeme` in the below
+example with something secure:
+
+```dotenv
+# secret key used for cookie signing and unique user ids, don't change this after the first install
+AUTHENTIK_SECRET_KEY=changeme
+
+# postgresql password, don't change this after the first install
+AUTHENTIK_POSTGRESQL_PASSWORD=changeme
 ```
 
 ### Plex NVIDIA hardware transcoding
