@@ -613,6 +613,23 @@ services:
       - ./config/portainer:/data
     restart: unless-stopped
 
+  virt-manager:
+    image: mber5/virt-manager:latest
+    container_name: virt-manager
+    logging: *default-logging
+    privileged: true
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.virt-manager.middlewares=authentik
+      - traefik.http.routers.virt-manager.rule=HostRegexp(`kvm.${HTTP_HOST:-127.0.0.1.sslip.io}`, `kvm.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.services.virt-manager.loadBalancer.server.port=80
+    environment:
+      - HOSTS=['qemu:///system']
+    volumes:
+      - /var/lib/libvirt/images:/var/lib/libvirt/images
+      - /var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock:ro
+    restart: unless-stopped
+
   autoheal:
     image: willfarrell/autoheal
     container_name: autoheal
