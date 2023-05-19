@@ -92,7 +92,7 @@ services:
   #=============================================================================
 
   authentik_server:
-    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2023.4.1}
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2023.5.1}
     container_name: authentik_server
     logging: *default-logging
     labels:
@@ -128,7 +128,7 @@ services:
     restart: unless-stopped
 
   authentik_worker:
-    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2023.4.1}
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2023.5.1}
     container_name: authentik_worker
     logging: *default-logging
     environment:
