@@ -265,6 +265,32 @@ services:
       - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/host/null5}
     restart: unless-stopped
 
+  mylar:
+    image: linuxserver/mylar3
+    container_name: mylar
+    logging: *default-logging
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.mylar.middlewares=authentik
+      - traefik.http.routers.mylar.rule=HostRegexp(`mylar.${HTTP_HOST:-127.0.0.1.sslip.io}`, `mylar.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.mylar.service=mylar
+      - traefik.http.services.mylar.loadBalancer.server.port=8090
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/London}
+    volumes:
+      - ./config/mylarr:/config
+      - ./media:/media
+      # Optional volumes, e.g. to follow symlinks
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/host/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/host/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/host/null4}
+      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/host/null5}
+    restart: unless-stopped
+
   #=============================================================================
   # media management
   #=============================================================================
