@@ -29,8 +29,15 @@ services:
       - traefik.http.routers.api.rule=HostRegexp(`traefik.${HTTP_HOST:-127.0.0.1.sslip.io}`, `traefik.{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.routers.api.service=api@internal
       - traefik.http.services.api.loadBalancer.server.port=80 # dummy port required in host mode
-    env_file:
-      - ./.env
+    environment:
+      - CF_API_EMAIL=${CF_API_EMAIL:-}
+      - CF_API_KEY=${CF_API_KEY:-}
+      - HTTP_HOST=${HTTP_HOST:-}
+      - HTTP_PORT=${HTTP_PORT:-}
+      - HTTPS_PORT=${HTTPS_PORT:-}
+      - HTTPS_REDIRECT_PORT=${HTTPS_REDIRECT_PORT:-}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
+      - TRAEFIK_API_ENABLE=${TRAEFIK_API_ENABLE:-}
     entrypoint: /bin/sh
     command:
       - -c
@@ -503,8 +510,6 @@ services:
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - UMASK=002
-      # vpn
-      - FIREWALL_VPN_INPUT_PORTS=${FIREWALL_VPN_INPUT_PORTS}
     volumes:
       - ./config/deluge:/config
       - ./config/vpn:/gluetun:ro
@@ -605,14 +610,14 @@ services:
       # http-proxy
       - 8888:8888
     environment:
-      # mullvad
-      - CITY=${MULLVAD_CITY:-London}
-      - FIREWALL_VPN_INPUT_PORTS=${FIREWALL_VPN_INPUT_PORTS}
+      # private internet access
+      - VPN_SERVICE_PROVIDER=private internet access
       - HTTPPROXY=on
-      - VPN_TYPE=wireguard
-      - VPNSP=mullvad
-      - WIREGUARD_ADDRESS=${WIREGUARD_ADDRESS:-10.64.222.21/32}
-      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      - OPENVPN_USER=$OPENVPN_USERNAME
+      - OPENVPN_PASSWORD=$OPENVPN_PASSWORD
+      - SERVER_REGIONS=${SERVER_REGIONS:-UK London}
+      - VPN_PORT_FORWARDING=on
+      - VPN_PORT_FORWARDING_STATUS_FILE=/gluetun/forwarded_port
     volumes:
       - ./config/vpn:/gluetun
     restart: unless-stopped

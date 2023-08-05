@@ -41,7 +41,7 @@ Let's Encrypt.
 
 - 🐧 Linux distribution capable of running Docker
 - 🐳 [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/other/#on-linux)
-- 🕵🏼 [Mullvad VPN](https://mullvad.net/) (required for secure torrent support)
+- 🕵🏼 [Private Internet Access VPN](https://www.privateinternetaccess.com/) (required for secure torrent support)
 
 ## Configuration
 
