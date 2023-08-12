@@ -32,7 +32,9 @@ if [[ "${FIREWALL_VPN_INPUT_PORTS:-}" != "" ]]; then
     echo "Updating deluge config to use port: $FIREWALL_VPN_INPUT_PORTS" >&2
     cp -f core.conf core.conf~
     if ! cat core.conf~ \
-        | perl -0777 -pe 's/"listen_ports":.+?\]/"listen_ports": [\n        '"$FIREWALL_VPN_INPUT_PORTS"',\n        '"$FIREWALL_VPN_INPUT_PORTS"'\n    ]/ms' \
+        | tr $'\n' '^' \
+        | sed -E 's/"listen_ports": \[[^]]+\]/"listen_ports": [^        '"$FIREWALL_VPN_INPUT_PORTS"',^        '"$FIREWALL_VPN_INPUT_PORTS"'^    ]/' \
+        | tr '^' $'\n' \
         | tee core.conf >/dev/null \
     ; then
         mv core.conf~ core.conf
