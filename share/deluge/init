@@ -27,6 +27,9 @@ echo -n "Detecting forwarded port .. " >&2
 if [[ "${FIREWALL_VPN_INPUT_PORTS:-}" == "" ]] && [[ -f /gluetun/forwarded_port ]]; then
     FIREWALL_VPN_INPUT_PORTS=$(grep -E '[0-9]+' /gluetun/forwarded_port)
 fi
+if [[ "${FIREWALL_VPN_INPUT_PORTS:-}" == "" ]] && [[ -f /gluetun/piaportforward.json ]]; then
+    FIREWALL_VPN_INPUT_PORTS=$(sed -nE 's/.*"port":([0-9]+).*/\1/p' /gluetun/piaportforward.json)
+fi
 if [[ "${FIREWALL_VPN_INPUT_PORTS:-}" != "" ]]; then
     echo "$FIREWALL_VPN_INPUT_PORTS" >&2
     echo "Updating deluge config to use port: $FIREWALL_VPN_INPUT_PORTS" >&2
