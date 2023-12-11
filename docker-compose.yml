@@ -650,7 +650,7 @@ services:
   #=============================================================================
 
   vpn:
-    image: qmcgaw/gluetun
+    image: qmcgaw/gluetun:v3
     container_name: vpn
     logging: *default-logging
     cap_add:
