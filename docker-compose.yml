@@ -26,7 +26,7 @@ services:
       # enable traefik dashboard using authentik middleware
       - traefik.enable=${TRAEFIK_API_ENABLE:-false}
       - traefik.http.routers.api.middlewares=${TRAEFIK_API_ENABLE:+authentik}
-      - traefik.http.routers.api.rule=HostRegexp(`traefik.${HTTP_HOST:-127.0.0.1.sslip.io}`, `traefik.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.api.rule=HostRegexp(`traefik.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`traefik.{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.routers.api.service=api@internal
       - traefik.http.services.api.loadBalancer.server.port=80 # dummy port required in host mode
     environment:
@@ -105,7 +105,7 @@ services:
     labels:
       - traefik.docker.network=${COMPOSE_PROJECT_NAME}_default
       - traefik.enable=true
-      - traefik.http.routers.authentik.rule=HostRegexp(`auth.${HTTP_HOST:-127.0.0.1.sslip.io}`, `auth.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.authentik.rule=HostRegexp(`auth.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`auth.{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.services.authentik.loadBalancer.server.port=9000
     environment:
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY?:authentik secret key required}
@@ -216,7 +216,7 @@ services:
     labels:
       - autoheal=true
       - traefik.enable=true
-      - traefik.http.routers.plex.rule=HostRegexp(`${HTTP_HOST:-127.0.0.1.sslip.io}`, `{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.plex.rule=HostRegexp(`${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.services.plex.loadBalancer.server.port=32400
     environment:
       # plex
@@ -258,7 +258,7 @@ services:
     user: ${PUID:-1000}:${PGID:-1000}
     labels:
       - traefik.enable=true
-      - traefik.http.routers.kavita.rule=HostRegexp(`read.${HTTP_HOST:-127.0.0.1.sslip.io}`, `read.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.kavita.rule=HostRegexp(`read.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`read.{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.services.kavita.loadBalancer.server.port=5000
     volumes:
       - ./config/kavita:/kavita/config
@@ -279,7 +279,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.mylar.middlewares=authentik
-      - traefik.http.routers.mylar.rule=HostRegexp(`mylar.${HTTP_HOST:-127.0.0.1.sslip.io}`, `mylar.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.mylar.rule=HostRegexp(`mylar.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`mylar.{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.routers.mylar.service=mylar
       - traefik.http.services.mylar.loadBalancer.server.port=8090
     environment:
@@ -310,11 +310,11 @@ services:
       - traefik.enable=true
       # use forward auth for frontend access
       - traefik.http.routers.sonarr.middlewares=authentik
-      - traefik.http.routers.sonarr.rule=HostRegexp(`sonarr.${HTTP_HOST:-127.0.0.1.sslip.io}`, `sonarr.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.sonarr.rule=HostRegexp(`sonarr.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`sonarr.{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.routers.sonarr.service=sonarr
       - traefik.http.services.sonarr.loadBalancer.server.port=8989
       # bypass forward auth for api endpoints
-      - traefik.http.routers.sonarr-api.rule=HostRegexp(`sonarr.${HTTP_HOST:-127.0.0.1.sslip.io}`, `sonarr.{subdomain:[0-9a-f:.-]+}.sslip.io`) && PathPrefix(`/api`)
+      - traefik.http.routers.sonarr-api.rule=HostRegexp(`sonarr.${HTTP_HOST:-127.0.0.1.sslip.io}`) && PathPrefix(`/api`) || HostRegexp(`sonarr.{subdomain:[0-9a-f:.-]+}.sslip.io`) && PathPrefix(`/api`)
       - traefik.http.routers.sonarr-api.service=sonarr-api
       - traefik.http.services.sonarr-api.loadBalancer.server.port=8989
     environment:
@@ -344,11 +344,11 @@ services:
       - traefik.enable=true
       # use forward auth for frontend access
       - traefik.http.routers.radarr.middlewares=authentik
-      - traefik.http.routers.radarr.rule=HostRegexp(`radarr.${HTTP_HOST:-127.0.0.1.sslip.io}`, `radarr.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.radarr.rule=HostRegexp(`radarr.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`radarr.{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.routers.radarr.service=radarr
       - traefik.http.services.radarr.loadBalancer.server.port=7878
       # bypass forward auth for api endpoints
-      - traefik.http.routers.radarr-api.rule=HostRegexp(`radarr.${HTTP_HOST:-127.0.0.1.sslip.io}`, `radarr.{subdomain:[0-9a-f:.-]+}.sslip.io`) && PathPrefix(`/api`)
+      - traefik.http.routers.radarr-api.rule=HostRegexp(`radarr.${HTTP_HOST:-127.0.0.1.sslip.io}`) && PathPrefix(`/api`) || HostRegexp(`radarr.{subdomain:[0-9a-f:.-]+}.sslip.io`) && PathPrefix(`/api`)
       - traefik.http.routers.radarr-api.service=radarr-api
       - traefik.http.services.radarr-api.loadBalancer.server.port=7878
     environment:
@@ -378,11 +378,11 @@ services:
       - traefik.enable=true
       # use forward auth for frontend access
       - traefik.http.routers.lidarr.middlewares=authentik
-      - traefik.http.routers.lidarr.rule=HostRegexp(`lidarr.${HTTP_HOST:-127.0.0.1.sslip.io}`, `lidarr.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.lidarr.rule=HostRegexp(`lidarr.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`lidarr.{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.routers.lidarr.service=lidarr
       - traefik.http.services.lidarr.loadBalancer.server.port=8686
       # bypass forward auth for api endpoints
-      - traefik.http.routers.lidarr-api.rule=HostRegexp(`lidarr.${HTTP_HOST:-127.0.0.1.sslip.io}`, `lidarr.{subdomain:[0-9a-f:.-]+}.sslip.io`) && PathPrefix(`/api`)
+      - traefik.http.routers.lidarr-api.rule=HostRegexp(`lidarr.${HTTP_HOST:-127.0.0.1.sslip.io}`) && PathPrefix(`/api`) || HostRegexp(`lidarr.{subdomain:[0-9a-f:.-]+}.sslip.io`) && PathPrefix(`/api`)
       - traefik.http.routers.lidarr-api.service=lidarr-api
       - traefik.http.services.lidarr-api.loadBalancer.server.port=8686
     environment:
@@ -412,11 +412,11 @@ services:
       - traefik.enable=true
       # use forward auth for frontend access
       - traefik.http.routers.readarr.middlewares=authentik
-      - traefik.http.routers.readarr.rule=HostRegexp(`readarr.${HTTP_HOST:-127.0.0.1.sslip.io}`, `readarr.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.readarr.rule=HostRegexp(`readarr.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`readarr.{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.routers.readarr.service=readarr
       - traefik.http.services.readarr.loadBalancer.server.port=8787
       # bypass forward auth for api endpoints
-      - traefik.http.routers.readarr-api.rule=HostRegexp(`readarr.${HTTP_HOST:-127.0.0.1.sslip.io}`, `readarr.{subdomain:[0-9a-f:.-]+}.sslip.io`) && PathPrefix(`/api`)
+      - traefik.http.routers.readarr-api.rule=HostRegexp(`readarr.${HTTP_HOST:-127.0.0.1.sslip.io}`) && PathPrefix(`/api`) || HostRegexp(`readarr.{subdomain:[0-9a-f:.-]+}.sslip.io`) && PathPrefix(`/api`)
       - traefik.http.routers.readarr-api.service=readarr-api
       - traefik.http.services.readarr-api.loadBalancer.server.port=8787
     environment:
@@ -442,7 +442,7 @@ services:
     logging: *default-logging
     labels:
       - traefik.enable=true
-      - traefik.http.routers.overseerr.rule=HostRegexp(`requests.${HTTP_HOST:-127.0.0.1.sslip.io}`, `requests.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.overseerr.rule=HostRegexp(`requests.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`requests.{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.services.overseerr.loadBalancer.server.port=5055
     environment:
       - PUID=${PUID:-1000}
@@ -464,11 +464,11 @@ services:
       - traefik.enable=true
       # use forward auth for frontend access
       - traefik.http.routers.prowlarr.middlewares=authentik
-      - traefik.http.routers.prowlarr.rule=HostRegexp(`prowlarr.${HTTP_HOST:-127.0.0.1.sslip.io}`, `prowlarr.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.prowlarr.rule=HostRegexp(`prowlarr.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`prowlarr.{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.routers.prowlarr.service=prowlarr
       - traefik.http.services.prowlarr.loadBalancer.server.port=9696
       # bypass forward auth for api endpoints
-      - traefik.http.routers.prowlarr-api.rule=HostRegexp(`prowlarr.${HTTP_HOST:-127.0.0.1.sslip.io}`, `prowlarr.{subdomain:[0-9a-f:.-]+}.sslip.io`) && PathPrefix(`/api`)
+      - traefik.http.routers.prowlarr-api.rule=HostRegexp(`prowlarr.${HTTP_HOST:-127.0.0.1.sslip.io}`) && PathPrefix(`/api`) || HostRegexp(`prowlarr.{subdomain:[0-9a-f:.-]+}.sslip.io`) && PathPrefix(`/api`)
       - traefik.http.routers.prowlarr-api.service=prowlarr-api
       - traefik.http.services.prowlarr-api.loadBalancer.server.port=9696
     environment:
@@ -497,11 +497,11 @@ services:
       - traefik.enable=true
       # use forward auth for frontend access
       - traefik.http.routers.deluge.middlewares=authentik
-      - traefik.http.routers.deluge.rule=HostRegexp(`deluge.${HTTP_HOST:-127.0.0.1.sslip.io}`, `deluge.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.deluge.rule=HostRegexp(`deluge.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`deluge.{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.routers.deluge.service=deluge
       - traefik.http.services.deluge.loadBalancer.server.port=8112
       # bypass forward auth for rpc endpoints
-      - traefik.http.routers.deluge-rpc.rule=HostRegexp(`deluge.${HTTP_HOST:-127.0.0.1.sslip.io}`, `deluge.{subdomain:[0-9a-f:.-]+}.sslip.io`) && PathPrefix(`/json`)
+      - traefik.http.routers.deluge-rpc.rule=HostRegexp(`deluge.${HTTP_HOST:-127.0.0.1.sslip.io}`) && PathPrefix(`/json`) || HostRegexp(`deluge.{subdomain:[0-9a-f:.-]+}.sslip.io`) && PathPrefix(`/json`)
       - traefik.http.routers.deluge-rpc.service=deluge-rpc
       - traefik.http.services.deluge-rpc.loadBalancer.server.port=8112
     environment:
@@ -543,11 +543,11 @@ services:
       - traefik.enable=true
       # use forward auth for frontend access
       - traefik.http.routers.nzbget.middlewares=authentik
-      - traefik.http.routers.nzbget.rule=HostRegexp(`nzbget.${HTTP_HOST:-127.0.0.1.sslip.io}`, `nzbget.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.nzbget.rule=HostRegexp(`nzbget.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`nzbget.{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.routers.nzbget.service=nzbget
       - traefik.http.services.nzbget.loadBalancer.server.port=6789
       # bypass forward auth for rpc endpoints
-      - traefik.http.routers.nzbget-rpc.rule=HostRegexp(`nzbget.${HTTP_HOST:-127.0.0.1.sslip.io}`, `nzbget.{subdomain:[0-9a-f:.-]+}.sslip.io`) && Path(`/{auth:[^/]+}/jsonrpc`)
+      - traefik.http.routers.nzbget-rpc.rule=HostRegexp(`nzbget.${HTTP_HOST:-127.0.0.1.sslip.io}`) && Path(`/{auth:[^/]+}/jsonrpc`) || HostRegexp(`nzbget.{subdomain:[0-9a-f:.-]+}.sslip.io`) && Path(`/{auth:[^/]+}/jsonrpc`)
       - traefik.http.routers.nzbget-rpc.service=nzbget-rpc
       - traefik.http.services.nzbget-rpc.loadBalancer.server.port=6789
     environment:
@@ -578,11 +578,11 @@ services:
       - traefik.enable=true
       # use forward auth for frontend access
       - traefik.http.routers.tautulli.middlewares=authentik
-      - traefik.http.routers.tautulli.rule=HostRegexp(`tautulli.${HTTP_HOST:-127.0.0.1.sslip.io}`, `tautulli.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.tautulli.rule=HostRegexp(`tautulli.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`tautulli.{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.routers.tautulli.service=tautulli
       - traefik.http.services.tautulli.loadBalancer.server.port=8181
       # bypass forward auth for api endpoints
-      - traefik.http.routers.tautulli-api.rule=HostRegexp(`tautulli.${HTTP_HOST:-127.0.0.1.sslip.io}`, `tautulli.{subdomain:[0-9a-f:.-]+}.sslip.io`) && PathPrefix(`/api`)
+      - traefik.http.routers.tautulli-api.rule=HostRegexp(`tautulli.${HTTP_HOST:-127.0.0.1.sslip.io}`) && PathPrefix(`/api`) || HostRegexp(`tautulli.{subdomain:[0-9a-f:.-]+}.sslip.io`) && PathPrefix(`/api`)
       - traefik.http.routers.tautulli-api.service=tautulli-api
       - traefik.http.services.tautulli-api.loadBalancer.server.port=8181
     environment:
@@ -632,7 +632,7 @@ services:
     logging: *default-logging
     labels:
       - traefik.enable=true
-      - traefik.http.routers.portainer.rule=HostRegexp(`portainer.${HTTP_HOST:-127.0.0.1.sslip.io}`, `portainer.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.portainer.rule=HostRegexp(`portainer.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`portainer.{subdomain:[0-9a-f:.-]+}.sslip.io`)
       - traefik.http.services.portainer.loadBalancer.server.port=9000
     environment:
       - PUID=${PUID:-1000}
