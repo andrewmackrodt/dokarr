@@ -543,11 +543,11 @@ services:
       - traefik.enable=true
       # use forward auth for frontend access
       - traefik.http.routers.nzbget.middlewares=authentik
-      - traefik.http.routers.nzbget.rule=HostRegexp(`nzbget.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`nzbget.{subdomain:[0-9a-f:.-]+}.sslip.io`)
+      - traefik.http.routers.nzbget.rule=Host(`nzbget.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`^nzbget.[0-9a-f:.-]+.sslip.io$`)
       - traefik.http.routers.nzbget.service=nzbget
       - traefik.http.services.nzbget.loadBalancer.server.port=6789
       # bypass forward auth for rpc endpoints
-      - traefik.http.routers.nzbget-rpc.rule=HostRegexp(`nzbget.${HTTP_HOST:-127.0.0.1.sslip.io}`) && Path(`/{auth:[^/]+}/jsonrpc`) || HostRegexp(`nzbget.{subdomain:[0-9a-f:.-]+}.sslip.io`) && Path(`/{auth:[^/]+}/jsonrpc`)
+      - traefik.http.routers.nzbget-rpc.rule=Host(`nzbget.${HTTP_HOST:-127.0.0.1.sslip.io}`) && PathRegexp(`/admin:[^/]+/jsonrpc`) || HostRegexp(`^nzbget.[0-9a-f:.-]+.sslip.io$`) && PathRegexp(`/admin:[^/]+/jsonrpc`)
       - traefik.http.routers.nzbget-rpc.service=nzbget-rpc
       - traefik.http.services.nzbget-rpc.loadBalancer.server.port=6789
     environment:
