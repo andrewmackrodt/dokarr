@@ -226,7 +226,7 @@ services:
       - VERSION=latest
       # nvidia
       - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=compute,video,utility
+      - NVIDIA_DRIVER_CAPABILITIES=all
     ports:
       - ${PLEX_PORT:-32400}:32400
     volumes:
@@ -252,16 +252,19 @@ services:
     restart: unless-stopped
 
   kavita:
-    image: kizaing/kavita:nightly
+    image: linuxserver/kavita
     container_name: kavita
     logging: *default-logging
-    user: ${PUID:-1000}:${PGID:-1000}
     labels:
       - traefik.enable=true
       - traefik.http.routers.kavita.rule=Host(`read.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`^read.[0-9a-f:.-]+.sslip.io$`)
       - traefik.http.services.kavita.loadBalancer.server.port=5000
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/London}
     volumes:
-      - ./config/kavita:/kavita/config
+      - ./config/kavita:/config
       - ./media:/media
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
@@ -613,6 +616,7 @@ services:
       # private internet access
       - VPN_SERVICE_PROVIDER=private internet access
       - HTTPPROXY=on
+      - OPENVPN_PROTOCOL=tcp
       - OPENVPN_USER=$OPENVPN_USERNAME
       - OPENVPN_PASSWORD=$OPENVPN_PASSWORD
       - SERVER_REGIONS=${SERVER_REGIONS:-UK London}
