@@ -17,7 +17,6 @@ Let's Encrypt.
 - <img alt="portainer" src="docs/images/portainer.png" width="12px"></img> **[Portainer][portainer]** simple management UI for Docker
 - <img alt="prowlarr" src="docs/images/prowlarr.png" width="12px"></img> **[Prowlarr][prowlarr]** indexer manager/proxy for nzb and torrent
 - <img alt="radarr" src="docs/images/radarr.png" width="12px"></img> **[Radarr][radarr]** a fork of Sonarr to work with movies à la Couchpotato
-- <img alt="readarr" src="docs/images/readarr.png" width="12px"></img> **[Readarr][readarr]** ebook and audiobook collection manager for Usenet and BitTorrent users
 - <img alt="sonarr" src="docs/images/sonarr.png" width="12px"></img> **[Sonarr][sonarr]** smart PVR for newsgroup and bittorrent users
 - <img alt="tautulli" src="docs/images/tautulli.png" width="12px"></img> **[Tautulli][tautulli]** monitoring and tracking tool for Plex Media Server
 
@@ -33,7 +32,6 @@ Let's Encrypt.
 [portainer]: https://hub.docker.com/r/portainer/portainer
 [prowlarr]: https://hub.docker.com/r/linuxserver/prowlarr
 [radarr]: https://hub.docker.com/r/linuxserver/radarr
-[readarr]: https://hub.docker.com/r/linuxserver/readarr
 [sonarr]: https://hub.docker.com/r/linuxserver/sonarr
 [tautulli]: https://hub.docker.com/r/linuxserver/tautulli
 

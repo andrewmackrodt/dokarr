@@ -18,7 +18,7 @@ services:
     network_mode: host
     labels:
       # register authentik forward proxy middleware
-      - traefik.http.middlewares.authentik.forwardAuth.address=http://172.17.0.1:9000/outpost.goauthentik.io/auth/traefik
+      - traefik.http.middlewares.authentik.forwardAuth.address=http://172.25.0.1:9000/outpost.goauthentik.io/auth/traefik
       - traefik.http.middlewares.authentik.forwardAuth.trustForwardHeader=true
       - traefik.http.middlewares.authentik.forwardAuth.authResponseHeaders=Authorization,X-authentik-username,X-authentik-groups,X-authentik-email,X-authentik-name,X-authentik-uid,X-authentik-jwt,X-authentik-meta-jwks,X-authentik-meta-outpost,X-authentik-meta-provider,X-authentik-meta-app,X-authentik-meta-version
       # enable traefik dashboard using authentik middleware
@@ -97,7 +97,7 @@ services:
   #=============================================================================
 
   authentik_server:
-    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2023.6.1}
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.6.4}
     container_name: authentik_server
     logging: *default-logging
     labels:
@@ -125,7 +125,7 @@ services:
       - authentik_backend
       - default
     ports:
-      - 172.17.0.1:9000:9000
+      - 172.25.0.1:9000:9000
     volumes:
       - ./share/authentik/flow_background.jpg:/web/dist/assets/images/flow_background.jpg:ro
       - ./config/authentik/media:/media
@@ -135,7 +135,7 @@ services:
     restart: unless-stopped
 
   authentik_worker:
-    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2023.6.1}
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.6.4}
     container_name: authentik_worker
     logging: *default-logging
     environment:
@@ -185,7 +185,7 @@ services:
     restart: unless-stopped
 
   authentik_postgresql:
-    image: docker.io/library/postgres:12-alpine
+    image: docker.io/library/postgres:17-alpine
     container_name: authentik_postgresql
     logging: *default-logging
     environment:
@@ -213,8 +213,12 @@ services:
     container_name: plex
     logging: *default-logging
     runtime: ${PLEX_RUNTIME:-runc}
+    security_opt:
+      - seccomp=unconfined
+    devices:
+      - /dev/dri
+      - /dev/kfd
     labels:
-      - autoheal=true
       - traefik.enable=true
       - traefik.http.routers.plex.rule=Host(`${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`^[0-9a-f:.-]+.sslip.io$`)
       - traefik.http.services.plex.loadBalancer.server.port=32400
@@ -224,15 +228,21 @@ services:
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/London}
       - VERSION=latest
-      # nvidia
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=all
+      # amdgpu
+      - MESA_SHADER_CACHE_DISABLE=true
     ports:
       - ${PLEX_PORT:-32400}:32400
     volumes:
       - ./cache/plex:/transcode
       - ./config/plex:/config
-      - ./media:/media
+      - /mnt/media:/media
+      # amdgpu
+      - ./share/plex/run:/etc/s6-overlay/s6-rc.d/svc-plex/run:ro
+      - ./share/plex/usr/share/libdrm/amdgpu.ids:/usr/share/libdrm/amdgpu.ids:ro
+      - ./share/plex/vaapi-amdgpu:/vaapi-amdgpu:ro
+      - ./share/plex/vaapi-amdgpu/lib/dri/radeonsi_drv_video.so:/config/Library/Application Support/Plex Media Server/Cache/va-dri-linux-x86_64/radeonsi_drv_video.so:ro
+      - /lib/firmware/amdgpu:/lib/firmware/amdgpu:ro
+      #- /usr/share/misc/pci.ids:/usr/share/misc/pci.ids:ro
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
       - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
@@ -240,15 +250,64 @@ services:
       - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/host/null3}
       - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/host/null4}
       - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/host/null5}
-    healthcheck:
-        test:
-          - CMD
-          - /bin/bash
-          - -c
-          - curl -fsSL -m5 http://127.0.0.1:32400/web/index.html >/dev/null && ( [[ ! -a /dev/nvidia0 ]] || nvidia-smi >/dev/null )
-        interval: 10s
-        timeout: 8s
-        retries: 3
+    restart: unless-stopped
+
+  jellyfin:
+    image: linuxserver/jellyfin
+    container_name: jellyfin
+    logging: *default-logging
+    security_opt:
+      - seccomp=unconfined
+    devices:
+      - /dev/dri
+      - /dev/kfd
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.jellyfin.rule=Host(`jellyfin.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`^jellyfin.[0-9a-f:.-]+.sslip.io$`)
+      - traefik.http.services.jellyfin.loadBalancer.server.port=8096
+    environment:
+      # jellyfin
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/London}
+    ports:
+      - 8096:8096
+    volumes:
+      - ./cache/jellyfin:/config/cache
+      - ./config/jellyfin:/config
+      - /mnt/media:/media
+      # Optional volumes, e.g. to follow symlinks
+      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
+      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
+      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/host/null2}
+      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/host/null3}
+      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/host/null4}
+      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/host/null5}
+    restart: unless-stopped
+
+  dispatcharr:
+    image: ghcr.io/dispatcharr/dispatcharr:latest
+    container_name: dispatcharr
+    logging: *default-logging
+    network_mode: service:vpn
+    labels:
+      - traefik.enable=true
+      # use forward auth for frontend access
+      #- traefik.http.routers.dispatcharr.middlewares=authentik
+      - traefik.http.routers.dispatcharr.rule=Host(`iptv.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`^iptv.[0-9a-f:.-]+.sslip.io$`)
+      - traefik.http.routers.dispatcharr.service=dispatcharr
+      - traefik.http.services.dispatcharr.loadBalancer.server.port=9191
+      ## bypass forward auth for static folder
+      #- traefik.http.routers.dispatcharr-static.rule=Host(`iptv.${HTTP_HOST:-127.0.0.1.sslip.io}`) && PathPrefix(`/static`) || HostRegexp(`^iptv.[0-9a-f:.-]+.sslip.io$`) && PathPrefix(`/static`)
+      #- traefik.http.routers.dispatcharr-static.service=dispatcharr-static
+      #- traefik.http.services.dispatcharr-static.loadBalancer.server.port=9191
+    environment:
+      - CELERY_BROKER_URL=redis://localhost:6379/0
+      - DISPATCHARR_ENV=aio
+      - DISPATCHARR_LOG_LEVEL=info
+      - REDIS_HOST=localhost
+    volumes:
+      - ./config/dispatcharr:/data
     restart: unless-stopped
 
   kavita:
@@ -265,7 +324,7 @@ services:
       - TZ=${TZ:-Europe/London}
     volumes:
       - ./config/kavita:/config
-      - ./media:/media
+      - /mnt/media:/media
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
       - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
@@ -291,7 +350,7 @@ services:
       - TZ=${TZ:-Europe/London}
     volumes:
       - ./config/mylarr:/config
-      - ./media:/media
+      - /mnt/media:/media
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
       - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
@@ -327,7 +386,7 @@ services:
       - XDG_CONFIG_HOME=/tmp/xdg
     volumes:
       - ./config/sonarr:/config
-      - ./media:/media
+      - /mnt/media:/media
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
       - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
@@ -361,7 +420,7 @@ services:
       - XDG_CONFIG_HOME=/tmp/xdg
     volumes:
       - ./config/radarr:/config
-      - ./media:/media
+      - /mnt/media:/media
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
       - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
@@ -395,7 +454,7 @@ services:
       - XDG_CONFIG_HOME=/tmp/xdg
     volumes:
       - ./config/lidarr:/config
-      - ./media:/media
+      - /mnt/media:/media
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
       - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
@@ -405,38 +464,6 @@ services:
       - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/host/null5}
     depends_on:
       - prowlarr
-    restart: unless-stopped
-
-  readarr:
-    image: ghcr.io/linuxserver/readarr:nightly
-    container_name: readarr
-    logging: *default-logging
-    labels:
-      - traefik.enable=true
-      # use forward auth for frontend access
-      - traefik.http.routers.readarr.middlewares=authentik
-      - traefik.http.routers.readarr.rule=Host(`readarr.${HTTP_HOST:-127.0.0.1.sslip.io}`) || HostRegexp(`^readarr.[0-9a-f:.-]+.sslip.io$`)
-      - traefik.http.routers.readarr.service=readarr
-      - traefik.http.services.readarr.loadBalancer.server.port=8787
-      # bypass forward auth for api endpoints
-      - traefik.http.routers.readarr-api.rule=Host(`readarr.${HTTP_HOST:-127.0.0.1.sslip.io}`) && PathPrefix(`/api`) || HostRegexp(`^readarr.[0-9a-f:.-]+.sslip.io$`) && PathPrefix(`/api`)
-      - traefik.http.routers.readarr-api.service=readarr-api
-      - traefik.http.services.readarr-api.loadBalancer.server.port=8787
-    environment:
-      - PUID=${PUID:-1000}
-      - PGID=${PGID:-1000}
-      - TZ=${TZ:-Europe/London}
-      - XDG_CONFIG_HOME=/tmp/xdg
-    volumes:
-      - ./config/readarr:/config
-      - ./media:/media
-      # Optional volumes, e.g. to follow symlinks
-      - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
-      - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
-      - ${EXTRA_DATA_VOL_2:-/dev/null}:${EXTRA_DATA_VOL_2:-/dev/host/null2}
-      - ${EXTRA_DATA_VOL_3:-/dev/null}:${EXTRA_DATA_VOL_3:-/dev/host/null3}
-      - ${EXTRA_DATA_VOL_4:-/dev/null}:${EXTRA_DATA_VOL_4:-/dev/host/null4}
-      - ${EXTRA_DATA_VOL_5:-/dev/null}:${EXTRA_DATA_VOL_5:-/dev/host/null5}
     restart: unless-stopped
 
   overseerr:
@@ -516,7 +543,7 @@ services:
     volumes:
       - ./config/deluge:/config
       - ./config/vpn:/gluetun:ro
-      - ./media:/media
+      - /mnt/media:/media
       - ./share/deluge/init:/usr/local/bin/init
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
@@ -550,7 +577,7 @@ services:
       - traefik.http.routers.nzbget.service=nzbget
       - traefik.http.services.nzbget.loadBalancer.server.port=6789
       # bypass forward auth for rpc endpoints
-      - traefik.http.routers.nzbget-rpc.rule=Host(`nzbget.${HTTP_HOST:-127.0.0.1.sslip.io}`) && PathRegexp(`/admin:[^/]+/jsonrpc`) || HostRegexp(`^nzbget.[0-9a-f:.-]+.sslip.io$`) && PathRegexp(`/admin:[^/]+/jsonrpc`)
+      - traefik.http.routers.nzbget-rpc.rule=Host(`nzbget.${HTTP_HOST:-127.0.0.1.sslip.io}`) && PathRegexp(`/(json|xml)rpc`) || HostRegexp(`^nzbget.[0-9a-f:.-]+.sslip.io$`) && PathRegexp(`/(json|xml)rpc`)
       - traefik.http.routers.nzbget-rpc.service=nzbget-rpc
       - traefik.http.services.nzbget-rpc.loadBalancer.server.port=6789
     environment:
@@ -559,7 +586,7 @@ services:
       - TZ=${TZ:-Europe/London}
     volumes:
       - ./config/nzbget:/config
-      - ./media:/media
+      - /mnt/media:/media
       # Optional volumes, e.g. to follow symlinks
       - ${EXTRA_DATA_VOL_0:-/dev/null}:${EXTRA_DATA_VOL_0:-/dev/host/null0}
       - ${EXTRA_DATA_VOL_1:-/dev/null}:${EXTRA_DATA_VOL_1:-/dev/host/null1}
@@ -602,7 +629,7 @@ services:
   #=============================================================================
 
   vpn:
-    image: qmcgaw/gluetun:v3
+    image: qmcgaw/gluetun
     container_name: vpn
     logging: *default-logging
     cap_add:
@@ -648,6 +675,52 @@ services:
       - ./config/portainer:/data
     restart: unless-stopped
 
+  #=============================================================================
+  # agentic
+  #=============================================================================
+
+  claude:
+    container_name: claude
+    hostname: claude-define
+    image: claude-dind:latest
+    build:
+      context: share/claude
+      args:
+        USER_UID: ${PUID:-1000}
+        USER_GID: ${PGID:-1000}
+        KISAK_PPA: 0
+    runtime: sysbox-runc
+    devices:
+      - /dev/dri
+    cpus: 16
+    mem_limit: 24g
+    shm_size: 1g
+    environment:
+      - GIT_USER_NAME=Andrew Mackrodt
+      - GIT_USER_EMAIL=andrewmackrodt@gmail.com
+      - RC_CAPACITY=8
+      - RC_CLAUDE_MD_OVERWRITE=1
+      - RC_DIR=/sessions
+      - RC_NAME=claude-define
+      - RC_PERMISSION_MODE=auto
+      - RC_SPAWN=same-dir
+    tmpfs:
+      - /run
+      - /run/lock
+    volumes:
+      - $HOME/Projects:/work
+      - claude_home:/home/dev
+      - claude_docker:/var/lib/docker
+      - claude_sessions:/sessions
+      - ./cache/claude:/sessions/.shared
+      - ./cache/claude:/shared
+    restart: unless-stopped
+    stop_grace_period: 45s
+
+  #=============================================================================
+  # utilities
+  #=============================================================================
+
   autoheal:
     image: willfarrell/autoheal
     container_name: autoheal
@@ -666,3 +739,7 @@ networks:
 volumes:
   authentik_redis:
   authentik_postgresql:
+  claude_docker:
+  claude_home:
+  claude_sessions:
+
